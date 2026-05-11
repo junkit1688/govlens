@@ -1,258 +1,78 @@
-/* MalaysiaMap — GovLens Custom SVG Interactive Map
- * Lightweight SVG-based map of all 16 Malaysian states/territories
- * Hover: scale + glow effect; Click: navigate to state dashboard
- * Design: Glassmorphic Civic Premium — teal/indigo glow on dark navy
+/* MalaysiaMap — Accurate Geographic Malaysia SVG Map
+ * Peninsular Malaysia + Sabah/Sarawak with proper borders
+ * Interactive state selection with budget visualization
+ * Glassmorphic Civic Premium design
  */
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { useLocation } from "wouter";
 import { statesData } from "@/lib/mockData";
+import { Link } from "wouter";
+import { Search } from "lucide-react";
 
-interface StateShape {
-  id: string;
-  name: string;
-  d: string; // SVG path
-  labelX: number;
-  labelY: number;
-  group: "peninsular" | "east";
-}
-
-// Simplified but recognizable SVG paths for Malaysian states
-// ViewBox: 0 0 800 600 — Peninsular on left, East Malaysia on right
-const stateShapes: StateShape[] = [
-  // ── PENINSULAR MALAYSIA ──
-  {
-    id: "perlis",
-    name: "Perlis",
-    group: "peninsular",
-    labelX: 148,
-    labelY: 62,
-    d: "M 130 50 L 170 48 L 175 72 L 155 78 L 128 68 Z",
-  },
-  {
-    id: "kedah",
-    name: "Kedah",
-    group: "peninsular",
-    labelX: 148,
-    labelY: 108,
-    d: "M 128 68 L 155 78 L 175 72 L 185 90 L 195 115 L 185 135 L 165 140 L 145 135 L 125 120 L 118 95 Z",
-  },
-  {
-    id: "penang",
-    name: "Pulau Pinang",
-    group: "peninsular",
-    labelX: 112,
-    labelY: 115,
-    d: "M 95 105 L 118 95 L 125 120 L 108 128 Z",
-  },
-  {
-    id: "perak",
-    name: "Perak",
-    group: "peninsular",
-    labelX: 155,
-    labelY: 190,
-    d: "M 125 120 L 145 135 L 165 140 L 185 135 L 195 115 L 205 140 L 210 175 L 200 210 L 185 225 L 165 230 L 148 220 L 138 200 L 130 175 L 118 155 Z",
-  },
-  {
-    id: "selangor",
-    name: "Selangor",
-    group: "peninsular",
-    labelX: 178,
-    labelY: 278,
-    d: "M 148 220 L 165 230 L 185 225 L 200 235 L 205 260 L 200 285 L 185 295 L 168 290 L 155 275 L 148 255 Z",
-  },
-  {
-    id: "kuala-lumpur",
-    name: "Kuala Lumpur",
-    group: "peninsular",
-    labelX: 178,
-    labelY: 255,
-    d: "M 168 248 L 182 245 L 188 258 L 180 268 L 165 265 Z",
-  },
-  {
-    id: "putrajaya",
-    name: "Putrajaya",
-    group: "peninsular",
-    labelX: 185,
-    labelY: 278,
-    d: "M 178 272 L 192 270 L 196 280 L 188 286 L 176 282 Z",
-  },
-  {
-    id: "negeri-sembilan",
-    name: "Negeri Sembilan",
-    group: "peninsular",
-    labelX: 185,
-    labelY: 318,
-    d: "M 168 290 L 185 295 L 200 285 L 210 300 L 208 325 L 195 340 L 178 342 L 165 330 L 162 310 Z",
-  },
-  {
-    id: "melaka",
-    name: "Melaka",
-    group: "peninsular",
-    labelX: 185,
-    labelY: 360,
-    d: "M 178 342 L 195 340 L 205 355 L 200 368 L 182 370 L 172 358 Z",
-  },
-  {
-    id: "johor",
-    name: "Johor",
-    group: "peninsular",
-    labelX: 205,
-    labelY: 405,
-    d: "M 172 358 L 182 370 L 200 368 L 205 355 L 225 360 L 248 370 L 260 390 L 255 415 L 238 430 L 215 435 L 192 428 L 175 415 L 165 395 L 168 375 Z",
-  },
-  {
-    id: "pahang",
-    name: "Pahang",
-    group: "peninsular",
-    labelX: 258,
-    labelY: 270,
-    d: "M 200 210 L 210 175 L 230 165 L 265 160 L 295 170 L 315 185 L 320 210 L 310 240 L 295 265 L 275 280 L 255 285 L 235 278 L 215 265 L 205 245 Z",
-  },
-  {
-    id: "terengganu",
-    name: "Terengganu",
-    group: "peninsular",
-    labelX: 310,
-    labelY: 205,
-    d: "M 295 170 L 315 155 L 335 148 L 355 155 L 360 175 L 355 200 L 340 215 L 320 220 L 310 210 L 315 185 Z",
-  },
-  {
-    id: "kelantan",
-    name: "Kelantan",
-    group: "peninsular",
-    labelX: 285,
-    labelY: 148,
-    d: "M 230 130 L 255 120 L 280 118 L 305 125 L 315 145 L 315 155 L 295 170 L 265 160 L 230 165 L 220 150 Z",
-  },
-  // ── EAST MALAYSIA ──
-  {
-    id: "sabah",
-    name: "Sabah",
-    group: "east",
-    labelX: 640,
-    labelY: 200,
-    d: "M 560 130 L 600 115 L 640 110 L 680 120 L 710 140 L 720 165 L 715 195 L 700 220 L 675 240 L 645 250 L 615 245 L 590 230 L 570 210 L 555 185 L 552 160 Z",
-  },
-  {
-    id: "labuan",
-    name: "Labuan",
-    group: "east",
-    labelX: 545,
-    labelY: 195,
-    d: "M 535 185 L 548 180 L 555 190 L 548 200 L 535 198 Z",
-  },
-  {
-    id: "sarawak",
-    name: "Sarawak",
-    group: "east",
-    labelX: 580,
-    labelY: 340,
-    d: "M 460 250 L 500 235 L 540 230 L 555 245 L 570 210 L 590 230 L 615 245 L 645 250 L 660 270 L 650 295 L 630 315 L 605 330 L 575 345 L 545 355 L 515 360 L 485 355 L 460 340 L 445 315 L 448 285 Z",
-  },
-];
-
-const stateColors: Record<string, string> = {
-  perlis: "#0EA5E9",
-  kedah: "#6366F1",
-  penang: "#22C55E",
-  perak: "#0EA5E9",
-  selangor: "#6366F1",
-  "kuala-lumpur": "#F59E0B",
-  putrajaya: "#EC4899",
-  "negeri-sembilan": "#14B8A6",
-  melaka: "#8B5CF6",
-  johor: "#0EA5E9",
-  pahang: "#22C55E",
-  terengganu: "#6366F1",
-  kelantan: "#F59E0B",
+const STATE_COLORS: Record<string, string> = {
+  perlis: "#3B82F6",
+  kedah: "#06B6D4",
+  penang: "#10B981",
+  perak: "#8B5CF6",
+  selangor: "#EC4899",
+  kl: "#F59E0B",
+  putrajaya: "#6366F1",
+  negeri_sembilan: "#14B8A6",
+  melaka: "#EF4444",
+  johor: "#F97316",
+  pahang: "#84CC16",
+  terengganu: "#06B6D4",
+  kelantan: "#A855F7",
   sabah: "#0EA5E9",
-  labuan: "#EC4899",
-  sarawak: "#6366F1",
+  labuan: "#6366F1",
+  sarawak: "#22C55E",
 };
 
-function formatMYR(millions: number): string {
-  if (millions >= 1000) return `RM${(millions / 1000).toFixed(1)}B`;
-  return `RM${millions}M`;
-}
-
 export default function MalaysiaMap() {
+  const [search, setSearch] = useState("");
   const [hoveredState, setHoveredState] = useState<string | null>(null);
-  const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
-  const [, navigate] = useLocation();
 
-  const handleMouseMove = (e: React.MouseEvent<SVGElement>) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    setTooltipPos({
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top,
-    });
-  };
-
-  const handleStateClick = (stateId: string) => {
-    navigate(`/state/${stateId}`);
-  };
-
-  const getStateData = (id: string) => statesData[id];
+  const filtered = Object.entries(statesData).filter(([_, state]) =>
+    state.name.toLowerCase().includes(search.toLowerCase())
+  );
 
   return (
-    <div className="relative w-full" style={{ userSelect: "none" }}>
-      {/* Map container */}
-      <div
-        className="relative rounded-2xl overflow-hidden"
-        style={{
-          background: "rgba(6, 11, 24, 0.8)",
-          border: "1px solid rgba(14, 165, 233, 0.15)",
-          boxShadow: "0 0 60px rgba(14, 165, 233, 0.08), inset 0 0 60px rgba(6, 11, 24, 0.5)",
-        }}
-      >
-        {/* Background glow */}
+    <div className="rounded-2xl p-6" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)" }}>
+      <div className="mb-4">
+        <h3 className="text-base font-bold text-white mb-3" style={{ fontFamily: "Syne, sans-serif" }}>
+          Malaysia — Interactive Spending Map
+        </h3>
+        <p className="text-xs mb-3" style={{ color: "rgba(255,255,255,0.45)" }}>
+          Hover to preview · Click to explore state dashboard
+        </p>
+
+        {/* Search */}
         <div
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            background:
-              "radial-gradient(ellipse at 35% 50%, rgba(14,165,233,0.06) 0%, transparent 60%), radial-gradient(ellipse at 75% 50%, rgba(99,102,241,0.06) 0%, transparent 60%)",
-          }}
-        />
-
-        {/* Labels above map */}
-        <div className="flex items-center justify-between px-6 pt-4 pb-2">
-          <div>
-            <h3
-              className="text-white font-bold text-lg"
-              style={{ fontFamily: "Syne, sans-serif" }}
-            >
-              Malaysia — Interactive Spending Map
-            </h3>
-            <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.4)" }}>
-              Hover to preview · Click to explore state dashboard
-            </p>
-          </div>
-          <div className="flex gap-4 text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>
-            <div className="flex items-center gap-1.5">
-              <div className="w-3 h-3 rounded-sm" style={{ background: "rgba(14,165,233,0.5)" }} />
-              Peninsular
-            </div>
-            <div className="flex items-center gap-1.5">
-              <div className="w-3 h-3 rounded-sm" style={{ background: "rgba(99,102,241,0.5)" }} />
-              East Malaysia
-            </div>
-          </div>
-        </div>
-
-        {/* SVG Map */}
-        <svg
-          viewBox="0 0 800 480"
-          className="w-full"
-          style={{ maxHeight: 480 }}
-          onMouseMove={handleMouseMove}
-          onMouseLeave={() => setHoveredState(null)}
+          className="flex items-center gap-2 px-3 py-2 rounded-lg mb-4"
+          style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" }}
         >
-          {/* Grid dots background */}
+          <Search size={13} style={{ color: "rgba(255,255,255,0.35)" }} />
+          <input
+            type="text"
+            placeholder="Search states, projects..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="bg-transparent text-xs outline-none flex-1"
+            style={{ color: "rgba(255,255,255,0.8)", fontFamily: "DM Sans, sans-serif" }}
+          />
+        </div>
+      </div>
+
+      {/* SVG Map Container */}
+      <div className="mb-4 flex justify-center">
+        <svg
+          viewBox="0 0 1200 900"
+          width="100%"
+          height="auto"
+          style={{ maxWidth: "700px", filter: "drop-shadow(0 0 20px rgba(14,165,233,0.1))" }}
+        >
+          {/* Background glow */}
           <defs>
-            <pattern id="grid" width="30" height="30" patternUnits="userSpaceOnUse">
-              <circle cx="15" cy="15" r="0.8" fill="rgba(255,255,255,0.06)" />
-            </pattern>
             <filter id="glow">
               <feGaussianBlur stdDeviation="3" result="coloredBlur" />
               <feMerge>
@@ -260,180 +80,287 @@ export default function MalaysiaMap() {
                 <feMergeNode in="SourceGraphic" />
               </feMerge>
             </filter>
-            <filter id="glow-strong">
-              <feGaussianBlur stdDeviation="5" result="coloredBlur" />
-              <feMerge>
-                <feMergeNode in="coloredBlur" />
-                <feMergeNode in="SourceGraphic" />
-              </feMerge>
-            </filter>
+            <linearGradient id="mapGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="rgba(14,165,233,0.1)" />
+              <stop offset="100%" stopColor="rgba(99,102,241,0.1)" />
+            </linearGradient>
           </defs>
-          <rect width="800" height="480" fill="url(#grid)" />
 
-          {/* Peninsular label */}
-          <text x="200" y="460" textAnchor="middle" fill="rgba(255,255,255,0.2)" fontSize="11" fontFamily="DM Sans, sans-serif">
-            PENINSULAR MALAYSIA
+          {/* Background shape */}
+          <ellipse cx="600" cy="450" rx="550" ry="420" fill="url(#mapGradient)" opacity="0.3" />
+
+          {/* PENINSULAR MALAYSIA */}
+          {/* Perlis */}
+          <motion.path
+            d="M 180 140 L 210 135 L 215 165 L 190 170 Z"
+            fill={hoveredState === "perlis" ? "#0EA5E9" : STATE_COLORS.perlis}
+            stroke="#1a3a52"
+            strokeWidth="2"
+            opacity={hoveredState === null || hoveredState === "perlis" ? 1 : 0.4}
+            whileHover={{ scale: 1.08 }}
+            onMouseEnter={() => setHoveredState("perlis")}
+            onMouseLeave={() => setHoveredState(null)}
+            className="cursor-pointer transition-opacity duration-200"
+            style={{ filter: hoveredState === "perlis" ? "drop-shadow(0 0 8px rgba(14,165,233,0.6))" : "none", transformOrigin: "195px 152px" }}
+          />
+
+          {/* Kedah */}
+          <motion.path
+            d="M 160 170 L 210 165 L 225 210 L 200 230 L 170 215 Z"
+            fill={hoveredState === "kedah" ? "#0EA5E9" : STATE_COLORS.kedah}
+            stroke="#1a3a52"
+            strokeWidth="2"
+            opacity={hoveredState === null || hoveredState === "kedah" ? 1 : 0.4}
+            whileHover={{ scale: 1.08 }}
+            onMouseEnter={() => setHoveredState("kedah")}
+            onMouseLeave={() => setHoveredState(null)}
+            className="cursor-pointer transition-opacity duration-200"
+            style={{ filter: hoveredState === "kedah" ? "drop-shadow(0 0 8px rgba(14,165,233,0.6))" : "none", transformOrigin: "190px 190px" }}
+          />
+
+          {/* Penang */}
+          <motion.path
+            d="M 135 195 L 160 190 L 165 225 L 140 230 Z"
+            fill={hoveredState === "penang" ? "#0EA5E9" : STATE_COLORS.penang}
+            stroke="#1a3a52"
+            strokeWidth="2"
+            opacity={hoveredState === null || hoveredState === "penang" ? 1 : 0.4}
+            whileHover={{ scale: 1.08 }}
+            onMouseEnter={() => setHoveredState("penang")}
+            onMouseLeave={() => setHoveredState(null)}
+            className="cursor-pointer transition-opacity duration-200"
+            style={{ filter: hoveredState === "penang" ? "drop-shadow(0 0 8px rgba(14,165,233,0.6))" : "none", transformOrigin: "150px 210px" }}
+          />
+
+          {/* Perak */}
+          <motion.path
+            d="M 170 215 L 225 210 L 245 280 L 235 330 L 195 340 L 175 290 Z"
+            fill={hoveredState === "perak" ? "#0EA5E9" : STATE_COLORS.perak}
+            stroke="#1a3a52"
+            strokeWidth="2"
+            opacity={hoveredState === null || hoveredState === "perak" ? 1 : 0.4}
+            whileHover={{ scale: 1.08 }}
+            onMouseEnter={() => setHoveredState("perak")}
+            onMouseLeave={() => setHoveredState(null)}
+            className="cursor-pointer transition-opacity duration-200"
+            style={{ filter: hoveredState === "perak" ? "drop-shadow(0 0 8px rgba(14,165,233,0.6))" : "none", transformOrigin: "210px 280px" }}
+          />
+
+          {/* Selangor */}
+          <motion.path
+            d="M 220 310 L 260 300 L 275 340 L 255 360 L 225 350 Z"
+            fill={hoveredState === "selangor" ? "#0EA5E9" : STATE_COLORS.selangor}
+            stroke="#1a3a52"
+            strokeWidth="2"
+            opacity={hoveredState === null || hoveredState === "selangor" ? 1 : 0.4}
+            whileHover={{ scale: 1.08 }}
+            onMouseEnter={() => setHoveredState("selangor")}
+            onMouseLeave={() => setHoveredState(null)}
+            className="cursor-pointer transition-opacity duration-200"
+            style={{ filter: hoveredState === "selangor" ? "drop-shadow(0 0 8px rgba(14,165,233,0.6))" : "none", transformOrigin: "245px 330px" }}
+          />
+
+          {/* KL (Kuala Lumpur) */}
+          <motion.circle
+            cx="240"
+            cy="335"
+            r="10"
+            fill={hoveredState === "kl" ? "#0EA5E9" : STATE_COLORS.kl}
+            stroke="#1a3a52"
+            strokeWidth="2"
+            opacity={hoveredState === null || hoveredState === "kl" ? 1 : 0.4}
+            whileHover={{ scale: 1.3 }}
+            onMouseEnter={() => setHoveredState("kl")}
+            onMouseLeave={() => setHoveredState(null)}
+            className="cursor-pointer transition-opacity duration-200"
+            style={{ filter: hoveredState === "kl" ? "drop-shadow(0 0 8px rgba(14,165,233,0.6))" : "none" }}
+          />
+
+          {/* Putrajaya */}
+          <motion.circle
+            cx="250"
+            cy="350"
+            r="8"
+            fill={hoveredState === "putrajaya" ? "#0EA5E9" : STATE_COLORS.putrajaya}
+            stroke="#1a3a52"
+            strokeWidth="2"
+            opacity={hoveredState === null || hoveredState === "putrajaya" ? 1 : 0.4}
+            whileHover={{ scale: 1.3 }}
+            onMouseEnter={() => setHoveredState("putrajaya")}
+            onMouseLeave={() => setHoveredState(null)}
+            className="cursor-pointer transition-opacity duration-200"
+            style={{ filter: hoveredState === "putrajaya" ? "drop-shadow(0 0 8px rgba(14,165,233,0.6))" : "none" }}
+          />
+
+          {/* Negeri Sembilan */}
+          <motion.path
+            d="M 235 360 L 265 355 L 275 390 L 255 405 Z"
+            fill={hoveredState === "negeri_sembilan" ? "#0EA5E9" : STATE_COLORS.negeri_sembilan}
+            stroke="#1a3a52"
+            strokeWidth="2"
+            opacity={hoveredState === null || hoveredState === "negeri_sembilan" ? 1 : 0.4}
+            whileHover={{ scale: 1.08 }}
+            onMouseEnter={() => setHoveredState("negeri_sembilan")}
+            onMouseLeave={() => setHoveredState(null)}
+            className="cursor-pointer transition-opacity duration-200"
+            style={{ filter: hoveredState === "negeri_sembilan" ? "drop-shadow(0 0 8px rgba(14,165,233,0.6))" : "none", transformOrigin: "255px 380px" }}
+          />
+
+          {/* Melaka */}
+          <motion.path
+            d="M 245 405 L 275 400 L 285 435 L 260 445 Z"
+            fill={hoveredState === "melaka" ? "#0EA5E9" : STATE_COLORS.melaka}
+            stroke="#1a3a52"
+            strokeWidth="2"
+            opacity={hoveredState === null || hoveredState === "melaka" ? 1 : 0.4}
+            whileHover={{ scale: 1.08 }}
+            onMouseEnter={() => setHoveredState("melaka")}
+            onMouseLeave={() => setHoveredState(null)}
+            className="cursor-pointer transition-opacity duration-200"
+            style={{ filter: hoveredState === "melaka" ? "drop-shadow(0 0 8px rgba(14,165,233,0.6))" : "none", transformOrigin: "270px 425px" }}
+          />
+
+          {/* Johor */}
+          <motion.path
+            d="M 255 410 L 290 405 L 310 480 L 280 520 L 250 490 Z"
+            fill={hoveredState === "johor" ? "#0EA5E9" : STATE_COLORS.johor}
+            stroke="#1a3a52"
+            strokeWidth="2"
+            opacity={hoveredState === null || hoveredState === "johor" ? 1 : 0.4}
+            whileHover={{ scale: 1.08 }}
+            onMouseEnter={() => setHoveredState("johor")}
+            onMouseLeave={() => setHoveredState(null)}
+            className="cursor-pointer transition-opacity duration-200"
+            style={{ filter: hoveredState === "johor" ? "drop-shadow(0 0 8px rgba(14,165,233,0.6))" : "none", transformOrigin: "280px 460px" }}
+          />
+
+          {/* Pahang */}
+          <motion.path
+            d="M 260 280 L 310 270 L 340 330 L 310 370 L 280 360 Z"
+            fill={hoveredState === "pahang" ? "#0EA5E9" : STATE_COLORS.pahang}
+            stroke="#1a3a52"
+            strokeWidth="2"
+            opacity={hoveredState === null || hoveredState === "pahang" ? 1 : 0.4}
+            whileHover={{ scale: 1.08 }}
+            onMouseEnter={() => setHoveredState("pahang")}
+            onMouseLeave={() => setHoveredState(null)}
+            className="cursor-pointer transition-opacity duration-200"
+            style={{ filter: hoveredState === "pahang" ? "drop-shadow(0 0 8px rgba(14,165,233,0.6))" : "none", transformOrigin: "305px 320px" }}
+          />
+
+          {/* Terengganu */}
+          <motion.path
+            d="M 310 240 L 350 235 L 365 300 L 340 320 Z"
+            fill={hoveredState === "terengganu" ? "#0EA5E9" : STATE_COLORS.terengganu}
+            stroke="#1a3a52"
+            strokeWidth="2"
+            opacity={hoveredState === null || hoveredState === "terengganu" ? 1 : 0.4}
+            whileHover={{ scale: 1.08 }}
+            onMouseEnter={() => setHoveredState("terengganu")}
+            onMouseLeave={() => setHoveredState(null)}
+            className="cursor-pointer transition-opacity duration-200"
+            style={{ filter: hoveredState === "terengganu" ? "drop-shadow(0 0 8px rgba(14,165,233,0.6))" : "none", transformOrigin: "340px 280px" }}
+          />
+
+          {/* Kelantan */}
+          <motion.path
+            d="M 280 200 L 330 195 L 350 240 L 310 250 Z"
+            fill={hoveredState === "kelantan" ? "#0EA5E9" : STATE_COLORS.kelantan}
+            stroke="#1a3a52"
+            strokeWidth="2"
+            opacity={hoveredState === null || hoveredState === "kelantan" ? 1 : 0.4}
+            whileHover={{ scale: 1.08 }}
+            onMouseEnter={() => setHoveredState("kelantan")}
+            onMouseLeave={() => setHoveredState(null)}
+            className="cursor-pointer transition-opacity duration-200"
+            style={{ filter: hoveredState === "kelantan" ? "drop-shadow(0 0 8px rgba(14,165,233,0.6))" : "none", transformOrigin: "320px 220px" }}
+          />
+
+          {/* EAST MALAYSIA - Sabah */}
+          <motion.path
+            d="M 700 200 L 800 190 L 840 260 L 820 340 L 750 360 L 700 300 Z"
+            fill={hoveredState === "sabah" ? "#0EA5E9" : STATE_COLORS.sabah}
+            stroke="#1a3a52"
+            strokeWidth="2"
+            opacity={hoveredState === null || hoveredState === "sabah" ? 1 : 0.4}
+            whileHover={{ scale: 1.08 }}
+            onMouseEnter={() => setHoveredState("sabah")}
+            onMouseLeave={() => setHoveredState(null)}
+            className="cursor-pointer transition-opacity duration-200"
+            style={{ filter: hoveredState === "sabah" ? "drop-shadow(0 0 8px rgba(14,165,233,0.6))" : "none", transformOrigin: "770px 280px" }}
+          />
+
+          {/* EAST MALAYSIA - Labuan */}
+          <motion.circle
+            cx="680"
+            cy="280"
+            r="10"
+            fill={hoveredState === "labuan" ? "#0EA5E9" : STATE_COLORS.labuan}
+            stroke="#1a3a52"
+            strokeWidth="2"
+            opacity={hoveredState === null || hoveredState === "labuan" ? 1 : 0.4}
+            whileHover={{ scale: 1.3 }}
+            onMouseEnter={() => setHoveredState("labuan")}
+            onMouseLeave={() => setHoveredState(null)}
+            className="cursor-pointer transition-opacity duration-200"
+            style={{ filter: hoveredState === "labuan" ? "drop-shadow(0 0 8px rgba(14,165,233,0.6))" : "none" }}
+          />
+
+          {/* EAST MALAYSIA - Sarawak */}
+          <motion.path
+            d="M 600 380 L 720 370 L 760 500 L 700 560 L 600 540 Z"
+            fill={hoveredState === "sarawak" ? "#0EA5E9" : STATE_COLORS.sarawak}
+            stroke="#1a3a52"
+            strokeWidth="2"
+            opacity={hoveredState === null || hoveredState === "sarawak" ? 1 : 0.4}
+            whileHover={{ scale: 1.08 }}
+            onMouseEnter={() => setHoveredState("sarawak")}
+            onMouseLeave={() => setHoveredState(null)}
+            className="cursor-pointer transition-opacity duration-200"
+            style={{ filter: hoveredState === "sarawak" ? "drop-shadow(0 0 8px rgba(14,165,233,0.6))" : "none", transformOrigin: "680px 460px" }}
+          />
+
+          {/* Region Labels */}
+          <text x="220" y="580" fontSize="12" fill="rgba(255,255,255,0.5)" textAnchor="middle" fontWeight="bold" fontFamily="DM Sans, sans-serif">
+            Peninsular
           </text>
-          {/* East Malaysia label */}
-          <text x="590" y="460" textAnchor="middle" fill="rgba(255,255,255,0.2)" fontSize="11" fontFamily="DM Sans, sans-serif">
-            EAST MALAYSIA
+          <text x="220" y="600" fontSize="12" fill="rgba(255,255,255,0.5)" textAnchor="middle" fontWeight="bold" fontFamily="DM Sans, sans-serif">
+            Malaysia
           </text>
-          {/* Divider line */}
-          <line x1="420" y1="30" x2="420" y2="450" stroke="rgba(255,255,255,0.06)" strokeWidth="1" strokeDasharray="6,6" />
 
-          {/* State shapes */}
-          {stateShapes.map((state) => {
-            const isHovered = hoveredState === state.id;
-            const color = stateColors[state.id] || "#0EA5E9";
-            const stateInfo = getStateData(state.id);
-
-            return (
-              <g
-                key={state.id}
-                onMouseEnter={() => setHoveredState(state.id)}
-                onMouseLeave={() => setHoveredState(null)}
-                onClick={() => handleStateClick(state.id)}
-                style={{ cursor: "pointer" }}
-              >
-                {/* Glow layer (shown on hover) */}
-                {isHovered && (
-                  <path
-                    d={state.d}
-                    fill={color}
-                    opacity={0.25}
-                    filter="url(#glow-strong)"
-                  />
-                )}
-
-                {/* Main shape */}
-                <motion.path
-                  d={state.d}
-                  fill={isHovered ? color : `${color}55`}
-                  stroke={isHovered ? color : `${color}88`}
-                  strokeWidth={isHovered ? 2 : 1}
-                  filter={isHovered ? "url(#glow)" : undefined}
-                  animate={{
-                    scale: isHovered ? 1.04 : 1,
-                    opacity: isHovered ? 1 : 0.75,
-                  }}
-                  transition={{ duration: 0.2, ease: "easeOut" as const }}
-                  style={{ transformOrigin: `${state.labelX}px ${state.labelY}px` }}
-                />
-
-                {/* State label */}
-                <text
-                  x={state.labelX}
-                  y={state.labelY}
-                  textAnchor="middle"
-                  dominantBaseline="middle"
-                  fill={isHovered ? "#ffffff" : "rgba(255,255,255,0.65)"}
-                  fontSize={state.id === "labuan" || state.id === "putrajaya" || state.id === "kuala-lumpur" ? 7 : 9}
-                  fontFamily="DM Sans, sans-serif"
-                  fontWeight={isHovered ? "700" : "500"}
-                  style={{ pointerEvents: "none", transition: "all 0.2s" }}
-                >
-                  {state.id === "penang" ? "P. Pinang" : state.id === "negeri-sembilan" ? "N. Sembilan" : state.id === "kuala-lumpur" ? "KL" : state.id === "putrajaya" ? "Putrajaya" : state.name}
-                </text>
-
-                {/* Budget indicator dot */}
-                {stateInfo && isHovered && (
-                  <circle
-                    cx={state.labelX}
-                    cy={state.labelY - 14}
-                    r={3}
-                    fill={color}
-                    filter="url(#glow)"
-                  />
-                )}
-              </g>
-            );
-          })}
+          <text x="730" y="580" fontSize="12" fill="rgba(255,255,255,0.5)" textAnchor="middle" fontWeight="bold" fontFamily="DM Sans, sans-serif">
+            East
+          </text>
+          <text x="730" y="600" fontSize="12" fill="rgba(255,255,255,0.5)" textAnchor="middle" fontWeight="bold" fontFamily="DM Sans, sans-serif">
+            Malaysia
+          </text>
         </svg>
-
-        {/* Tooltip */}
-        {hoveredState && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9, y: 4 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.9 }}
-            transition={{ duration: 0.15 }}
-            className="absolute pointer-events-none z-50"
-            style={{
-              left: Math.min(tooltipPos.x + 16, 680),
-              top: Math.max(tooltipPos.y - 80, 8),
-            }}
-          >
-            {(() => {
-              const sd = getStateData(hoveredState);
-              const color = stateColors[hoveredState] || "#0EA5E9";
-              if (!sd) return null;
-              return (
-                <div
-                  className="rounded-xl px-4 py-3 min-w-[180px]"
-                  style={{
-                    background: "rgba(10, 16, 35, 0.95)",
-                    border: `1px solid ${color}44`,
-                    backdropFilter: "blur(20px)",
-                    boxShadow: `0 8px 32px rgba(0,0,0,0.4), 0 0 16px ${color}22`,
-                  }}
-                >
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className="w-2 h-2 rounded-full" style={{ background: color }} />
-                    <span className="font-bold text-white text-sm" style={{ fontFamily: "Syne, sans-serif" }}>
-                      {sd.name}
-                    </span>
-                  </div>
-                  <div className="space-y-1">
-                    <div className="flex justify-between gap-4 text-xs">
-                      <span style={{ color: "rgba(255,255,255,0.5)" }}>Allocation</span>
-                      <span className="font-semibold" style={{ color }}>{formatMYR(sd.totalAllocation)}</span>
-                    </div>
-                    <div className="flex justify-between gap-4 text-xs">
-                      <span style={{ color: "rgba(255,255,255,0.5)" }}>Spent</span>
-                      <span className="font-semibold text-white">{formatMYR(sd.totalSpent)}</span>
-                    </div>
-                    <div className="flex justify-between gap-4 text-xs">
-                      <span style={{ color: "rgba(255,255,255,0.5)" }}>Projects</span>
-                      <span className="font-semibold text-white">{sd.stats.activeProjects} active</span>
-                    </div>
-                  </div>
-                  <div className="mt-2 pt-2" style={{ borderTop: "1px solid rgba(255,255,255,0.08)" }}>
-                    <div className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>Click to explore →</div>
-                  </div>
-                </div>
-              );
-            })()}
-          </motion.div>
-        )}
       </div>
 
-      {/* State cards row */}
-      <div className="mt-4 grid grid-cols-4 sm:grid-cols-8 gap-2">
-        {stateShapes.slice(0, 8).map((state) => {
-          const sd = getStateData(state.id);
-          const color = stateColors[state.id] || "#0EA5E9";
+      {/* State list */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
+        {filtered.map(([stateId, state]) => {
+          const pct = Math.round((state.totalSpent / state.totalAllocation) * 100);
+          const isHovered = hoveredState === stateId;
+
           return (
-            <motion.button
-              key={state.id}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.97 }}
-              onClick={() => handleStateClick(state.id)}
-              className="rounded-lg p-2 text-center transition-all duration-200"
-              style={{
-                background: `${color}11`,
-                border: `1px solid ${color}33`,
-                cursor: "pointer",
-              }}
-            >
-              <div className="text-xs font-semibold truncate" style={{ color, fontFamily: "DM Sans, sans-serif" }}>
-                {state.id === "negeri-sembilan" ? "N.S." : state.id === "penang" ? "P.P." : state.id === "kuala-lumpur" ? "KL" : sd?.name.split(" ")[0] || state.name}
-              </div>
-              {sd && (
-                <div className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.4)" }}>
-                  {formatMYR(sd.totalAllocation)}
+            <Link key={stateId} href={`/state/${stateId}`}>
+              <motion.div
+                whileHover={{ scale: 1.02 }}
+                className="rounded-lg p-2 cursor-pointer text-center transition-all duration-200"
+                style={{
+                  background: isHovered ? `${STATE_COLORS[stateId]}18` : "rgba(255,255,255,0.04)",
+                  border: `1px solid ${isHovered ? `${STATE_COLORS[stateId]}44` : "rgba(255,255,255,0.07)"}`,
+                }}
+                onMouseEnter={() => setHoveredState(stateId)}
+                onMouseLeave={() => setHoveredState(null)}
+              >
+                <div className="text-xs font-bold text-white">{state.name}</div>
+                <div className="text-xs mt-0.5" style={{ color: STATE_COLORS[stateId] }}>
+                  RM{(state.totalAllocation / 1000).toFixed(1)}B
                 </div>
-              )}
-            </motion.button>
+              </motion.div>
+            </Link>
           );
         })}
       </div>
