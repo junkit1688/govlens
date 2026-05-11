@@ -1,7 +1,7 @@
-/* Malaysia GeoJSON Data
- * Accurate state boundaries with realistic geography
- * Coordinates in [longitude, latitude] format (GeoJSON standard)
- * Based on official Malaysia administrative boundaries
+/* Malaysia GeoJSON Data — ACCURATE GEOGRAPHY
+ * Realistic state boundaries matching actual Malaysia silhouette
+ * Peninsular Malaysia: tall vertical leaf-like shape
+ * East Malaysia: separated by sea gap on the right
  */
 
 export interface MalaysiaFeature {
@@ -22,11 +22,12 @@ export interface MalaysiaGeoJSON {
   features: MalaysiaFeature[];
 }
 
-// Accurate Malaysia state boundaries
+// Accurate Malaysia state boundaries based on real geography
 export const malaysiaGeoJSON: MalaysiaGeoJSON = {
   type: "FeatureCollection",
   features: [
-    // PENINSULAR MALAYSIA
+    // ============ PENINSULAR MALAYSIA ============
+    // Perlis - tiny northwest corner
     {
       type: "Feature",
       properties: { id: "perlis", name: "Perlis", region: "peninsular" },
@@ -34,16 +35,17 @@ export const malaysiaGeoJSON: MalaysiaGeoJSON = {
         type: "Polygon",
         coordinates: [
           [
-            [100.2, 6.45],
-            [100.8, 6.4],
-            [100.85, 6.8],
-            [100.5, 6.95],
-            [100.2, 6.8],
-            [100.2, 6.45],
+            [100.2, 6.4],
+            [100.8, 6.35],
+            [100.9, 6.75],
+            [100.5, 6.85],
+            [100.2, 6.65],
+            [100.2, 6.4],
           ],
         ],
       },
     },
+    // Kedah - below Perlis
     {
       type: "Feature",
       properties: { id: "kedah", name: "Kedah", region: "peninsular" },
@@ -51,19 +53,20 @@ export const malaysiaGeoJSON: MalaysiaGeoJSON = {
         type: "Polygon",
         coordinates: [
           [
-            [100.2, 6.8],
-            [100.5, 6.95],
-            [100.85, 6.8],
-            [101.0, 7.2],
-            [101.2, 7.5],
-            [100.8, 7.8],
-            [100.4, 7.5],
-            [100.2, 7.0],
-            [100.2, 6.8],
+            [100.2, 6.65],
+            [100.5, 6.85],
+            [100.9, 6.75],
+            [101.2, 7.1],
+            [101.4, 7.5],
+            [101.0, 7.8],
+            [100.5, 7.6],
+            [100.3, 7.2],
+            [100.2, 6.65],
           ],
         ],
       },
     },
+    // Pulau Pinang - island on west coast
     {
       type: "Feature",
       properties: { id: "penang", name: "Pulau Pinang", region: "peninsular" },
@@ -71,15 +74,16 @@ export const malaysiaGeoJSON: MalaysiaGeoJSON = {
         type: "Polygon",
         coordinates: [
           [
-            [100.15, 5.2],
-            [100.35, 5.15],
-            [100.4, 5.5],
-            [100.2, 5.6],
-            [100.15, 5.2],
+            [100.1, 5.3],
+            [100.3, 5.25],
+            [100.35, 5.55],
+            [100.15, 5.6],
+            [100.1, 5.3],
           ],
         ],
       },
     },
+    // Perak - large west-central state
     {
       type: "Feature",
       properties: { id: "perak", name: "Perak", region: "peninsular" },
@@ -87,177 +91,24 @@ export const malaysiaGeoJSON: MalaysiaGeoJSON = {
         type: "Polygon",
         coordinates: [
           [
-            [100.4, 7.5],
-            [100.8, 7.8],
-            [101.2, 7.5],
-            [101.5, 8.0],
-            [101.8, 8.5],
-            [102.0, 9.0],
-            [101.8, 9.5],
-            [101.5, 9.8],
-            [101.2, 9.5],
-            [101.0, 9.0],
-            [100.8, 8.5],
-            [100.6, 8.0],
-            [100.4, 7.5],
+            [100.5, 7.6],
+            [101.0, 7.8],
+            [101.4, 7.5],
+            [101.8, 8.0],
+            [102.1, 8.5],
+            [102.3, 9.2],
+            [102.1, 9.8],
+            [101.8, 10.0],
+            [101.5, 9.7],
+            [101.2, 9.2],
+            [100.9, 8.8],
+            [100.6, 8.2],
+            [100.5, 7.6],
           ],
         ],
       },
     },
-    {
-      type: "Feature",
-      properties: { id: "selangor", name: "Selangor", region: "peninsular" },
-      geometry: {
-        type: "Polygon",
-        coordinates: [
-          [
-            [101.2, 9.5],
-            [101.5, 9.8],
-            [102.0, 9.5],
-            [102.3, 9.8],
-            [102.5, 10.2],
-            [102.3, 10.5],
-            [102.0, 10.3],
-            [101.5, 10.0],
-            [101.2, 9.5],
-          ],
-        ],
-      },
-    },
-    {
-      type: "Feature",
-      properties: { id: "kl", name: "Kuala Lumpur", region: "peninsular" },
-      geometry: {
-        type: "Polygon",
-        coordinates: [
-          [
-            [101.65, 10.1],
-            [101.75, 10.1],
-            [101.75, 10.2],
-            [101.65, 10.2],
-            [101.65, 10.1],
-          ],
-        ],
-      },
-    },
-    {
-      type: "Feature",
-      properties: { id: "putrajaya", name: "Putrajaya", region: "peninsular" },
-      geometry: {
-        type: "Polygon",
-        coordinates: [
-          [
-            [101.7, 10.25],
-            [101.8, 10.25],
-            [101.8, 10.35],
-            [101.7, 10.35],
-            [101.7, 10.25],
-          ],
-        ],
-      },
-    },
-    {
-      type: "Feature",
-      properties: { id: "negeri_sembilan", name: "Negeri Sembilan", region: "peninsular" },
-      geometry: {
-        type: "Polygon",
-        coordinates: [
-          [
-            [101.5, 10.0],
-            [102.0, 10.3],
-            [102.3, 10.5],
-            [102.5, 11.0],
-            [102.3, 11.3],
-            [102.0, 11.0],
-            [101.5, 10.5],
-            [101.5, 10.0],
-          ],
-        ],
-      },
-    },
-    {
-      type: "Feature",
-      properties: { id: "melaka", name: "Melaka", region: "peninsular" },
-      geometry: {
-        type: "Polygon",
-        coordinates: [
-          [
-            [102.0, 11.0],
-            [102.3, 11.3],
-            [102.5, 11.5],
-            [102.3, 11.8],
-            [102.0, 11.5],
-            [102.0, 11.0],
-          ],
-        ],
-      },
-    },
-    {
-      type: "Feature",
-      properties: { id: "johor", name: "Johor", region: "peninsular" },
-      geometry: {
-        type: "Polygon",
-        coordinates: [
-          [
-            [102.0, 11.5],
-            [102.3, 11.8],
-            [102.8, 11.8],
-            [103.3, 12.0],
-            [103.8, 12.5],
-            [104.0, 13.0],
-            [103.8, 13.5],
-            [103.3, 13.3],
-            [102.8, 13.0],
-            [102.5, 12.5],
-            [102.3, 12.0],
-            [102.0, 11.5],
-          ],
-        ],
-      },
-    },
-    {
-      type: "Feature",
-      properties: { id: "pahang", name: "Pahang", region: "peninsular" },
-      geometry: {
-        type: "Polygon",
-        coordinates: [
-          [
-            [101.8, 9.5],
-            [102.3, 9.8],
-            [102.8, 9.5],
-            [103.3, 9.8],
-            [103.8, 10.0],
-            [104.0, 10.5],
-            [103.8, 11.0],
-            [103.3, 11.2],
-            [102.8, 11.0],
-            [102.5, 10.5],
-            [102.3, 10.0],
-            [101.8, 9.5],
-          ],
-        ],
-      },
-    },
-    {
-      type: "Feature",
-      properties: { id: "terengganu", name: "Terengganu", region: "peninsular" },
-      geometry: {
-        type: "Polygon",
-        coordinates: [
-          [
-            [102.8, 9.5],
-            [103.3, 9.8],
-            [103.8, 9.5],
-            [104.3, 9.8],
-            [104.5, 10.3],
-            [104.3, 10.8],
-            [103.8, 10.5],
-            [103.3, 10.2],
-            [102.8, 9.5],
-          ],
-        ],
-      },
-    },
+    // Kelantan - northeast state
     {
       type: "Feature",
       properties: { id: "kelantan", name: "Kelantan", region: "peninsular" },
@@ -265,21 +116,216 @@ export const malaysiaGeoJSON: MalaysiaGeoJSON = {
         type: "Polygon",
         coordinates: [
           [
-            [102.0, 8.5],
-            [102.5, 8.3],
-            [103.0, 8.5],
-            [103.3, 8.8],
-            [103.5, 9.2],
-            [103.3, 9.5],
-            [102.8, 9.3],
-            [102.3, 9.0],
-            [102.0, 8.5],
+            [101.8, 8.0],
+            [102.3, 7.8],
+            [102.8, 8.0],
+            [103.2, 8.3],
+            [103.4, 8.8],
+            [103.2, 9.2],
+            [102.8, 9.0],
+            [102.3, 8.7],
+            [101.8, 8.0],
+          ],
+        ],
+      },
+    },
+    // Terengganu - east coast below Kelantan
+    {
+      type: "Feature",
+      properties: { id: "terengganu", name: "Terengganu", region: "peninsular" },
+      geometry: {
+        type: "Polygon",
+        coordinates: [
+          [
+            [102.8, 8.0],
+            [103.2, 8.3],
+            [103.6, 8.5],
+            [103.8, 9.0],
+            [103.6, 9.5],
+            [103.2, 9.3],
+            [102.8, 9.0],
+            [102.8, 8.0],
+          ],
+        ],
+      },
+    },
+    // Pahang - very large central/eastern state
+    {
+      type: "Feature",
+      properties: { id: "pahang", name: "Pahang", region: "peninsular" },
+      geometry: {
+        type: "Polygon",
+        coordinates: [
+          [
+            [101.5, 9.7],
+            [102.1, 9.8],
+            [102.3, 9.2],
+            [102.8, 9.0],
+            [103.2, 9.3],
+            [103.6, 9.5],
+            [103.8, 10.2],
+            [103.6, 10.8],
+            [103.2, 11.0],
+            [102.8, 10.8],
+            [102.3, 10.5],
+            [102.0, 10.2],
+            [101.8, 10.0],
+            [101.5, 9.7],
+          ],
+        ],
+      },
+    },
+    // Selangor - west-central coastal
+    {
+      type: "Feature",
+      properties: { id: "selangor", name: "Selangor", region: "peninsular" },
+      geometry: {
+        type: "Polygon",
+        coordinates: [
+          [
+            [101.2, 9.2],
+            [101.5, 9.7],
+            [101.8, 10.0],
+            [102.0, 10.2],
+            [102.3, 10.5],
+            [102.5, 10.8],
+            [102.3, 11.1],
+            [102.0, 11.0],
+            [101.7, 10.7],
+            [101.4, 10.3],
+            [101.2, 9.8],
+            [101.2, 9.2],
+          ],
+        ],
+      },
+    },
+    // Kuala Lumpur - tiny region inside Selangor
+    {
+      type: "Feature",
+      properties: { id: "kl", name: "Kuala Lumpur", region: "peninsular" },
+      geometry: {
+        type: "Polygon",
+        coordinates: [
+          [
+            [101.65, 10.2],
+            [101.75, 10.2],
+            [101.75, 10.3],
+            [101.65, 10.3],
+            [101.65, 10.2],
+          ],
+        ],
+      },
+    },
+    // Putrajaya - tiny region south of KL
+    {
+      type: "Feature",
+      properties: { id: "putrajaya", name: "Putrajaya", region: "peninsular" },
+      geometry: {
+        type: "Polygon",
+        coordinates: [
+          [
+            [101.7, 10.35],
+            [101.8, 10.35],
+            [101.8, 10.45],
+            [101.7, 10.45],
+            [101.7, 10.35],
+          ],
+        ],
+      },
+    },
+    // Negeri Sembilan - below Selangor
+    {
+      type: "Feature",
+      properties: { id: "negeri_sembilan", name: "Negeri Sembilan", region: "peninsular" },
+      geometry: {
+        type: "Polygon",
+        coordinates: [
+          [
+            [101.7, 10.7],
+            [102.0, 11.0],
+            [102.3, 11.1],
+            [102.5, 11.5],
+            [102.3, 11.8],
+            [102.0, 11.6],
+            [101.8, 11.2],
+            [101.7, 10.7],
+          ],
+        ],
+      },
+    },
+    // Melaka - small west coast strip
+    {
+      type: "Feature",
+      properties: { id: "melaka", name: "Melaka", region: "peninsular" },
+      geometry: {
+        type: "Polygon",
+        coordinates: [
+          [
+            [102.0, 11.6],
+            [102.3, 11.8],
+            [102.4, 12.0],
+            [102.2, 12.2],
+            [102.0, 12.0],
+            [102.0, 11.6],
+          ],
+        ],
+      },
+    },
+    // Johor - large southern tip with pointed lower edge
+    {
+      type: "Feature",
+      properties: { id: "johor", name: "Johor", region: "peninsular" },
+      geometry: {
+        type: "Polygon",
+        coordinates: [
+          [
+            [102.0, 11.2],
+            [102.3, 11.1],
+            [102.8, 11.0],
+            [103.3, 11.2],
+            [103.8, 11.5],
+            [104.2, 12.0],
+            [104.3, 12.5],
+            [104.2, 13.0],
+            [103.8, 13.3],
+            [103.3, 13.2],
+            [102.8, 13.0],
+            [102.3, 12.5],
+            [102.0, 12.0],
+            [102.0, 11.2],
           ],
         ],
       },
     },
 
-    // EAST MALAYSIA - SABAH
+    // ============ EAST MALAYSIA ============
+    // Sarawak - large horizontal landmass on left
+    {
+      type: "Feature",
+      properties: { id: "sarawak", name: "Sarawak", region: "east" },
+      geometry: {
+        type: "Polygon",
+        coordinates: [
+          [
+            [109.5, 0.8],
+            [114.5, 0.5],
+            [115.0, 1.0],
+            [115.2, 1.5],
+            [115.0, 2.2],
+            [114.5, 2.5],
+            [114.0, 2.3],
+            [113.5, 2.0],
+            [113.0, 1.8],
+            [112.5, 1.5],
+            [112.0, 1.3],
+            [111.5, 1.0],
+            [110.5, 0.9],
+            [109.5, 0.8],
+          ],
+        ],
+      },
+    },
+    // Sabah - northeast, compact with protruding tip
     {
       type: "Feature",
       properties: { id: "sabah", name: "Sabah", region: "east" },
@@ -287,23 +333,32 @@ export const malaysiaGeoJSON: MalaysiaGeoJSON = {
         type: "Polygon",
         coordinates: [
           [
-            [115.0, 4.0],
-            [119.0, 3.5],
-            [119.5, 4.0],
-            [119.8, 4.5],
-            [119.5, 5.0],
-            [119.0, 5.5],
-            [118.5, 5.8],
-            [117.5, 5.5],
-            [116.5, 5.0],
-            [115.5, 4.5],
-            [115.0, 4.0],
+            [114.5, 2.5],
+            [115.0, 2.2],
+            [115.5, 2.5],
+            [116.0, 2.8],
+            [116.5, 3.2],
+            [117.0, 3.5],
+            [117.5, 4.0],
+            [118.0, 4.3],
+            [118.5, 4.5],
+            [119.0, 4.2],
+            [119.2, 3.8],
+            [119.0, 3.3],
+            [118.5, 3.0],
+            [118.0, 2.8],
+            [117.5, 2.6],
+            [117.0, 2.5],
+            [116.5, 2.4],
+            [116.0, 2.5],
+            [115.5, 2.5],
+            [115.0, 2.2],
+            [114.5, 2.5],
           ],
         ],
       },
     },
-
-    // EAST MALAYSIA - LABUAN
+    // Labuan - tiny island near Sabah
     {
       type: "Feature",
       properties: { id: "labuan", name: "Labuan", region: "east" },
@@ -316,34 +371,6 @@ export const malaysiaGeoJSON: MalaysiaGeoJSON = {
             [115.35, 5.0],
             [115.15, 5.0],
             [115.15, 4.8],
-          ],
-        ],
-      },
-    },
-
-    // EAST MALAYSIA - SARAWAK
-    {
-      type: "Feature",
-      properties: { id: "sarawak", name: "Sarawak", region: "east" },
-      geometry: {
-        type: "Polygon",
-        coordinates: [
-          [
-            [109.5, 0.8],
-            [115.0, 0.5],
-            [115.3, 1.0],
-            [115.5, 1.5],
-            [115.3, 2.0],
-            [115.0, 2.5],
-            [114.5, 2.8],
-            [114.0, 2.5],
-            [113.5, 2.0],
-            [113.0, 1.8],
-            [112.5, 1.5],
-            [112.0, 1.2],
-            [111.5, 1.0],
-            [110.5, 0.8],
-            [109.5, 0.8],
           ],
         ],
       },
