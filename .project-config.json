@@ -1,0 +1,41 @@
+{
+  "build_command": "pnpm run build",
+  "capabilities": [
+    "db",
+    "server",
+    "user"
+  ],
+  "dev_command": "pnpm run dev",
+  "env_vars": {
+    "DATABASE_URL": "mysql://GtvNU9DXAAqQYTg.root:j3JHopwr53Y8JXL5Co6m@gateway06.us-east-1.prod.aws.tidbcloud.com:4000/ihHM7ZDmrkLrYL33x6xYVd?ssl={\"rejectUnauthorized\":true}"
+  },
+  "experiments": null,
+  "git_remote": {
+    "repo_url": "s3://vida-prod-gitrepo/webdev-git/310519663646625067/ihHM7ZDmrkLrYL33x6xYVd",
+    "access_key_id": "ASIAZV3A2ECZMWWFAJXJ",
+    "secret_access_key": "czbodnVwEt0kUyfzToiW+Us3yHeP6EGG59bfp46t",
+    "session_token": "IQoJb3JpZ2luX2VjED4aCXVzLWVhc3QtMSJHMEUCIQDZk2m+N5HBMCYS2UvBQjrnlm+nkAINq7Jruxx+9g8HBwIgb3ZwwZBEHQTrdEMekWinyEei/JTJvPzL0S9Xd7XpK3oq9gMIBxAEGgw2NjUzODYwOTg4NjYiDG4G6I98PDvB/EKvESrTAxUgiv6nfQVVgJXWbnBOWPogmax8+sh/q1VDFwCo4xTixDcgMmPYP6eviiNIBRxAwTcaznU6G2fzRxmPC/6EEH4zYuAKAnq5rgqSqmAuVsMyIkjY+0J61JmdRMgdTIQnTXw1PdbGkOEaNELwMU7ZtiRIXEc8Ayy2uLLuuiFKiMX9ceOZqmCXu5CfoQMcVbdxt1qyOZYsLlNiBo2OjZ8o+/yCdft+iYr4S0V+pSe/508dkfH1yJqK3JB4i75iRHJefugCH4cCGQkZRJTxRlbxcvOpv11mPHR+g/391So5Ul3RUr8pGIOnB9sVt050tnANRyZ1QGuPwoFJcKKafyZMW+W8uz+VaLOYlrq3ZEz7pFAgltdxWViNKffqyYnOqlAoEq8lKgVP3keU5ij1C/Qh7pKzmdOs9r/46wz3xwSKOggRnYB2rYH75UKX2neqGHpc4FVfnq9FE4HrBP5nlUVGIzxwMm5jDzoXQnoePilI8Gnor6PDr3P3wa6Fbp2vKYuUqDFMblT8IL1k2u9JKTzLEee5fXKDWN7NBc/wbkRZq/WsnlbDQDEu3Gc82GH492gfFqhVZl9+prFRpawWKWJYMyp4ZOgZk74QhQbQboMtDMC1K1YdMPuZvNAGOp0BxGBjpDUqyYyrvlCDraAA/XOvKrFp6yti0k6ra81VRKk1YBNEaQFcgZR8nrLJGjyQttwm9vnt5Cdg2rBHlrTBgxi1Q4NQck0dRTIL7d+zFeNWQhWYrAJt+2XmFRa0P7cJXrt24eYtJpyC8E4aUqPBtUuh8dg5k0tge1iP/MSpET2HsT2LdrevXzAPn82lPeWUEYIzoe2Mk2funHcAoQ==",
+    "expiration": "2026-05-22T01:47:39.000Z"
+  },
+  "name": "govlens",
+  "path": "/home/ubuntu/govlens",
+  "port": 3000,
+  "secrets": {
+    "BUILT_IN_FORGE_API_KEY": "5vGpBtdR74WhM2JLj8FcYe",
+    "BUILT_IN_FORGE_API_URL": "https://forge.manus.ai",
+    "JWT_SECRET": "25QjARKAu3ryfXbkYT6wct",
+    "OAUTH_SERVER_URL": "https://api.manus.im",
+    "OWNER_NAME": "Jun kit",
+    "OWNER_OPEN_ID": "cSAQHVkfwuhQKS2mo5HonH",
+    "VITE_ANALYTICS_ENDPOINT": "https://manus-analytics.com",
+    "VITE_ANALYTICS_WEBSITE_ID": "d4ad786c-56b5-41a3-b20b-0067003857e0",
+    "VITE_APP_ID": "ihHM7ZDmrkLrYL33x6xYVd",
+    "VITE_APP_LOGO": "https://files.manuscdn.com/user_upload_by_module/web_dev_logo/310519663646625067/oKNucvxfPHsQFiAI.png",
+    "VITE_APP_TITLE": "GovLens — Malaysia Government Transparency Platform",
+    "VITE_FRONTEND_FORGE_API_KEY": "3XzesY5zgXg59VHqpmipEg",
+    "VITE_FRONTEND_FORGE_API_URL": "https://forge.manus.ai",
+    "VITE_OAUTH_PORTAL_URL": "https://manus.im"
+  },
+  "template_id": "web-db-user",
+  "test_command": "pnpm test"
+}
