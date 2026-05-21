@@ -4,9 +4,9 @@
  * Glassmorphic Civic Premium design
  */
 import { useState } from "react";
-import { motion } from "framer-motion";
-import { AlertTriangle, Search, Plus, MapPin, Clock, CheckCircle, Activity, ThumbsUp, Camera } from "lucide-react";
-import { citizenReports, type CitizenReport } from "@/lib/mockData";
+import { motion, AnimatePresence } from "framer-motion";
+import { AlertTriangle, Search, Plus, MapPin, Clock, CheckCircle, Activity, ThumbsUp, Camera, X } from "lucide-react";
+import { citizenReports as initialReports, type CitizenReport } from "@/lib/mockData";
 import { toast } from "sonner";
 
 const CATEGORY_CONFIG: Record<CitizenReport["category"], { label: string; color: string; emoji: string }> = {
@@ -24,12 +24,26 @@ const STATUS_CONFIG: Record<CitizenReport["status"], { label: string; color: str
   resolved: { label: "Resolved", color: "#22C55E", icon: CheckCircle },
 };
 
+const STATES = [
+  "Selangor", "Johor", "Penang", "Perak", "Sabah", "Sarawak", "Kedah",
+  "Kelantan", "Pahang", "Terengganu", "Negeri Sembilan", "Malacca",
+  "Perlis", "Kuala Lumpur", "Putrajaya", "Labuan"
+];
+
 export default function ReportsPage() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | CitizenReport["status"]>("all");
   const [catFilter, setCatFilter] = useState<"all" | CitizenReport["category"]>("all");
   const [upvoted, setUpvoted] = useState<Set<string>>(new Set());
-  const [reports, setReports] = useState(citizenReports);
+  const [reports, setReports] = useState<CitizenReport[]>(initialReports);
+  const [showForm, setShowForm] = useState(false);
+
+  // Form state
+  const [formTitle, setFormTitle] = useState("");
+  const [formDescription, setFormDescription] = useState("");
+  const [formCategory, setFormCategory] = useState<CitizenReport["category"] | "">("");
+  const [formState, setFormState] = useState("");
+  const [formLocation, setFormLocation] = useState("");
 
   const filtered = reports.filter((r) => {
     const matchSearch = r.title.toLowerCase().includes(search.toLowerCase()) || r.state.toLowerCase().includes(search.toLowerCase()) || r.location.toLowerCase().includes(search.toLowerCase());
@@ -46,6 +60,38 @@ export default function ReportsPage() {
     setUpvoted((prev) => { const next = new Set(prev); next.add(id); return next; });
     setReports((prev) => prev.map((r) => r.id === id ? { ...r, upvotes: r.upvotes + 1 } : r));
     toast.success("Report upvoted! This helps prioritize the issue.");
+  };
+
+  const handleSubmitReport = () => {
+    if (!formTitle.trim()) { toast.error("Please enter a report title."); return; }
+    if (!formDescription.trim()) { toast.error("Please describe the issue."); return; }
+    if (!formCategory) { toast.error("Please select a category."); return; }
+    if (!formState) { toast.error("Please select a state."); return; }
+    if (!formLocation.trim()) { toast.error("Please enter the location."); return; }
+
+    const newReport: CitizenReport = {
+      id: `rpt-${Date.now()}`,
+      title: formTitle.trim(),
+      description: formDescription.trim(),
+      category: formCategory as CitizenReport["category"],
+      state: formState,
+      location: formLocation.trim(),
+      status: "pending",
+      reportedAt: "Just now",
+      reporter: "You",
+      upvotes: 0,
+    };
+
+    setReports((prev) => [newReport, ...prev]);
+    toast.success("Report submitted! Authorities will be notified.");
+
+    // Reset form
+    setFormTitle("");
+    setFormDescription("");
+    setFormCategory("");
+    setFormState("");
+    setFormLocation("");
+    setShowForm(false);
   };
 
   const pendingCount = reports.filter((r) => r.status === "pending").length;
@@ -72,7 +118,7 @@ export default function ReportsPage() {
         <motion.button
           whileHover={{ scale: 1.04 }}
           whileTap={{ scale: 0.97 }}
-          onClick={() => toast.info("Report submission form coming soon!")}
+          onClick={() => setShowForm(true)}
           className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-white"
           style={{
             background: "linear-gradient(135deg, #EF4444, #F97316)",
@@ -300,7 +346,7 @@ export default function ReportsPage() {
         <motion.button
           whileHover={{ scale: 1.04 }}
           whileTap={{ scale: 0.97 }}
-          onClick={() => toast.info("Report submission form coming soon!")}
+          onClick={() => setShowForm(true)}
           className="px-5 py-2.5 rounded-xl text-sm font-semibold text-white flex-shrink-0"
           style={{
             background: "linear-gradient(135deg, #EF4444, #F97316)",
@@ -310,6 +356,175 @@ export default function ReportsPage() {
           Submit Report
         </motion.button>
       </motion.div>
+
+      {/* Submit Report Modal */}
+      <AnimatePresence>
+        {showForm && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4"
+            style={{ background: "rgba(0,0,0,0.7)", backdropFilter: "blur(8px)" }}
+            onClick={(e) => { if (e.target === e.currentTarget) setShowForm(false); }}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              transition={{ duration: 0.2 }}
+              className="w-full max-w-lg rounded-2xl p-6 max-h-[85vh] overflow-y-auto"
+              style={{
+                background: "rgba(10,16,35,0.98)",
+                border: "1px solid rgba(239,68,68,0.2)",
+                boxShadow: "0 0 60px rgba(239,68,68,0.1)",
+              }}
+            >
+              {/* Modal header */}
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-bold text-white" style={{ fontFamily: "Syne, sans-serif" }}>
+                  Submit a Report
+                </h2>
+                <button
+                  onClick={() => setShowForm(false)}
+                  className="w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-200"
+                  style={{ background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.5)" }}
+                >
+                  <X size={16} />
+                </button>
+              </div>
+
+              {/* Form */}
+              <div className="space-y-4">
+                {/* Title */}
+                <div>
+                  <label className="text-xs font-semibold mb-1.5 block" style={{ color: "rgba(255,255,255,0.6)" }}>
+                    Issue Title *
+                  </label>
+                  <input
+                    type="text"
+                    value={formTitle}
+                    onChange={(e) => setFormTitle(e.target.value)}
+                    placeholder="e.g., Large pothole on Jalan Ampang"
+                    className="w-full px-3 py-2.5 rounded-xl text-sm outline-none transition-all duration-200"
+                    style={{
+                      background: "rgba(255,255,255,0.05)",
+                      border: "1px solid rgba(255,255,255,0.1)",
+                      color: "rgba(255,255,255,0.9)",
+                      fontFamily: "DM Sans, sans-serif",
+                    }}
+                  />
+                </div>
+
+                {/* Description */}
+                <div>
+                  <label className="text-xs font-semibold mb-1.5 block" style={{ color: "rgba(255,255,255,0.6)" }}>
+                    Description *
+                  </label>
+                  <textarea
+                    value={formDescription}
+                    onChange={(e) => setFormDescription(e.target.value)}
+                    placeholder="Describe the issue in detail — size, severity, how it affects the community..."
+                    rows={4}
+                    className="w-full px-3 py-2.5 rounded-xl text-sm outline-none resize-none transition-all duration-200"
+                    style={{
+                      background: "rgba(255,255,255,0.05)",
+                      border: "1px solid rgba(255,255,255,0.1)",
+                      color: "rgba(255,255,255,0.9)",
+                      fontFamily: "DM Sans, sans-serif",
+                    }}
+                  />
+                </div>
+
+                {/* Category */}
+                <div>
+                  <label className="text-xs font-semibold mb-1.5 block" style={{ color: "rgba(255,255,255,0.6)" }}>
+                    Category *
+                  </label>
+                  <div className="grid grid-cols-3 gap-2">
+                    {(Object.keys(CATEGORY_CONFIG) as CitizenReport["category"][]).map((cat) => {
+                      const conf = CATEGORY_CONFIG[cat];
+                      const isSelected = formCategory === cat;
+                      return (
+                        <button
+                          key={cat}
+                          type="button"
+                          onClick={() => setFormCategory(cat)}
+                          className="px-3 py-2 rounded-xl text-xs font-semibold transition-all duration-200 text-center"
+                          style={{
+                            background: isSelected ? `${conf.color}18` : "rgba(255,255,255,0.04)",
+                            border: `1px solid ${isSelected ? `${conf.color}44` : "rgba(255,255,255,0.08)"}`,
+                            color: isSelected ? conf.color : "rgba(255,255,255,0.5)",
+                          }}
+                        >
+                          {conf.emoji} {conf.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* State + Location row */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-xs font-semibold mb-1.5 block" style={{ color: "rgba(255,255,255,0.6)" }}>
+                      State *
+                    </label>
+                    <select
+                      value={formState}
+                      onChange={(e) => setFormState(e.target.value)}
+                      className="w-full px-3 py-2.5 rounded-xl text-sm outline-none appearance-none cursor-pointer"
+                      style={{
+                        background: "rgba(255,255,255,0.05)",
+                        border: "1px solid rgba(255,255,255,0.1)",
+                        color: formState ? "rgba(255,255,255,0.9)" : "rgba(255,255,255,0.4)",
+                        fontFamily: "DM Sans, sans-serif",
+                      }}
+                    >
+                      <option value="" style={{ background: "#0A1023" }}>Select state</option>
+                      {STATES.map((s) => (
+                        <option key={s} value={s} style={{ background: "#0A1023" }}>{s}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold mb-1.5 block" style={{ color: "rgba(255,255,255,0.6)" }}>
+                      Location *
+                    </label>
+                    <input
+                      type="text"
+                      value={formLocation}
+                      onChange={(e) => setFormLocation(e.target.value)}
+                      placeholder="e.g., Jalan Ampang, KL"
+                      className="w-full px-3 py-2.5 rounded-xl text-sm outline-none transition-all duration-200"
+                      style={{
+                        background: "rgba(255,255,255,0.05)",
+                        border: "1px solid rgba(255,255,255,0.1)",
+                        color: "rgba(255,255,255,0.9)",
+                        fontFamily: "DM Sans, sans-serif",
+                      }}
+                    />
+                  </div>
+                </div>
+
+                {/* Submit button */}
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.97 }}
+                  onClick={handleSubmitReport}
+                  className="w-full py-3 rounded-xl text-sm font-bold text-white mt-2"
+                  style={{
+                    background: "linear-gradient(135deg, #EF4444, #F97316)",
+                    boxShadow: "0 0 20px rgba(239,68,68,0.25)",
+                  }}
+                >
+                  Submit Report
+                </motion.button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

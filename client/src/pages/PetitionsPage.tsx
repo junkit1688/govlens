@@ -3,9 +3,9 @@
  * Glassmorphic Civic Premium design
  */
 import { useState } from "react";
-import { motion } from "framer-motion";
-import { FileText, Search, Filter, TrendingUp, Users, CheckCircle, Plus, MapPin, Tag } from "lucide-react";
-import { petitions } from "@/lib/mockData";
+import { motion, AnimatePresence } from "framer-motion";
+import { FileText, Search, Filter, TrendingUp, Users, CheckCircle, Plus, MapPin, Tag, X } from "lucide-react";
+import { petitions as initialPetitions, type Petition } from "@/lib/mockData";
 import { toast } from "sonner";
 
 const STATUS_CONFIG = {
@@ -14,12 +14,33 @@ const STATUS_CONFIG = {
   won: { label: "Won", color: "#22C55E" },
 };
 
+const STATES = [
+  "Selangor", "Johor", "Penang", "Perak", "Sabah", "Sarawak", "Kedah",
+  "Kelantan", "Pahang", "Terengganu", "Negeri Sembilan", "Malacca",
+  "Perlis", "Kuala Lumpur", "Putrajaya", "Labuan"
+];
+
+const CATEGORIES = [
+  "Infrastructure", "Transportation", "Healthcare", "Education",
+  "Environment", "Housing", "Agriculture", "Utilities", "Community"
+];
+
 export default function PetitionsPage() {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<"all" | "active" | "won" | "closed">("all");
   const [signed, setSigned] = useState<Set<string>>(new Set());
+  const [allPetitions, setAllPetitions] = useState<Petition[]>(initialPetitions);
+  const [showForm, setShowForm] = useState(false);
 
-  const filtered = petitions.filter((p) => {
+  // Form state
+  const [formTitle, setFormTitle] = useState("");
+  const [formDescription, setFormDescription] = useState("");
+  const [formState, setFormState] = useState("");
+  const [formCategory, setFormCategory] = useState("");
+  const [formTarget, setFormTarget] = useState("1000");
+  const [formTags, setFormTags] = useState("");
+
+  const filtered = allPetitions.filter((p) => {
     const matchSearch = p.title.toLowerCase().includes(search.toLowerCase()) || p.state.toLowerCase().includes(search.toLowerCase());
     const matchFilter = filter === "all" || p.status === filter;
     return matchSearch && matchFilter;
@@ -31,7 +52,44 @@ export default function PetitionsPage() {
       return;
     }
     setSigned((prev) => { const next = new Set(prev); next.add(id); return next; });
+    setAllPetitions((prev) =>
+      prev.map((p) => p.id === id ? { ...p, signatures: p.signatures + 1 } : p)
+    );
     toast.success("Petition signed successfully! Thank you for your support.");
+  };
+
+  const handleSubmitPetition = () => {
+    if (!formTitle.trim()) { toast.error("Please enter a petition title."); return; }
+    if (!formDescription.trim()) { toast.error("Please enter a description."); return; }
+    if (!formState) { toast.error("Please select a state."); return; }
+    if (!formCategory) { toast.error("Please select a category."); return; }
+
+    const newPetition: Petition = {
+      id: `pet-${Date.now()}`,
+      title: formTitle.trim(),
+      description: formDescription.trim(),
+      state: formState,
+      category: formCategory,
+      signatures: 1,
+      target: parseInt(formTarget) || 1000,
+      status: "active",
+      createdAt: new Date().toLocaleDateString("en-MY", { year: "numeric", month: "short", day: "numeric" }),
+      author: "You",
+      tags: formTags.split(",").map((t) => t.trim()).filter(Boolean),
+    };
+
+    setAllPetitions((prev) => [newPetition, ...prev]);
+    setSigned((prev) => { const next = new Set(prev); next.add(newPetition.id); return next; });
+    toast.success("Petition created successfully! Share it to gather signatures.");
+
+    // Reset form
+    setFormTitle("");
+    setFormDescription("");
+    setFormState("");
+    setFormCategory("");
+    setFormTarget("1000");
+    setFormTags("");
+    setShowForm(false);
   };
 
   return (
@@ -54,7 +112,7 @@ export default function PetitionsPage() {
         <motion.button
           whileHover={{ scale: 1.04 }}
           whileTap={{ scale: 0.97 }}
-          onClick={() => toast.info("Petition creation form coming soon!")}
+          onClick={() => setShowForm(true)}
           className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-white"
           style={{
             background: "linear-gradient(135deg, #0EA5E9, #6366F1)",
@@ -73,9 +131,9 @@ export default function PetitionsPage() {
         className="grid grid-cols-3 gap-3"
       >
         {[
-          { label: "Active Petitions", value: petitions.filter((p) => p.status === "active").length, icon: FileText, color: "#0EA5E9" },
-          { label: "Total Signatures", value: petitions.reduce((a, p) => a + p.signatures, 0).toLocaleString(), icon: Users, color: "#6366F1" },
-          { label: "Petitions Won", value: petitions.filter((p) => p.status === "won").length, icon: CheckCircle, color: "#22C55E" },
+          { label: "Active Petitions", value: allPetitions.filter((p) => p.status === "active").length, icon: FileText, color: "#0EA5E9" },
+          { label: "Total Signatures", value: allPetitions.reduce((a, p) => a + p.signatures, 0).toLocaleString(), icon: Users, color: "#6366F1" },
+          { label: "Petitions Won", value: allPetitions.filter((p) => p.status === "won").length, icon: CheckCircle, color: "#22C55E" },
         ].map((s, i) => (
           <motion.div
             key={s.label}
@@ -237,6 +295,191 @@ export default function PetitionsPage() {
           <p className="text-sm">No petitions found matching your search.</p>
         </div>
       )}
+
+      {/* Create Petition Modal */}
+      <AnimatePresence>
+        {showForm && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4"
+            style={{ background: "rgba(0,0,0,0.7)", backdropFilter: "blur(8px)" }}
+            onClick={(e) => { if (e.target === e.currentTarget) setShowForm(false); }}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              transition={{ duration: 0.2 }}
+              className="w-full max-w-lg rounded-2xl p-6 max-h-[85vh] overflow-y-auto"
+              style={{
+                background: "rgba(10,16,35,0.98)",
+                border: "1px solid rgba(14,165,233,0.2)",
+                boxShadow: "0 0 60px rgba(14,165,233,0.1)",
+              }}
+            >
+              {/* Modal header */}
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-bold text-white" style={{ fontFamily: "Syne, sans-serif" }}>
+                  Create New Petition
+                </h2>
+                <button
+                  onClick={() => setShowForm(false)}
+                  className="w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-200"
+                  style={{ background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.5)" }}
+                >
+                  <X size={16} />
+                </button>
+              </div>
+
+              {/* Form */}
+              <div className="space-y-4">
+                {/* Title */}
+                <div>
+                  <label className="text-xs font-semibold mb-1.5 block" style={{ color: "rgba(255,255,255,0.6)" }}>
+                    Petition Title *
+                  </label>
+                  <input
+                    type="text"
+                    value={formTitle}
+                    onChange={(e) => setFormTitle(e.target.value)}
+                    placeholder="e.g., Improve public transport in Selangor"
+                    className="w-full px-3 py-2.5 rounded-xl text-sm outline-none transition-all duration-200"
+                    style={{
+                      background: "rgba(255,255,255,0.05)",
+                      border: "1px solid rgba(255,255,255,0.1)",
+                      color: "rgba(255,255,255,0.9)",
+                      fontFamily: "DM Sans, sans-serif",
+                    }}
+                  />
+                </div>
+
+                {/* Description */}
+                <div>
+                  <label className="text-xs font-semibold mb-1.5 block" style={{ color: "rgba(255,255,255,0.6)" }}>
+                    Description *
+                  </label>
+                  <textarea
+                    value={formDescription}
+                    onChange={(e) => setFormDescription(e.target.value)}
+                    placeholder="Describe the issue and what you want the government to do..."
+                    rows={4}
+                    className="w-full px-3 py-2.5 rounded-xl text-sm outline-none resize-none transition-all duration-200"
+                    style={{
+                      background: "rgba(255,255,255,0.05)",
+                      border: "1px solid rgba(255,255,255,0.1)",
+                      color: "rgba(255,255,255,0.9)",
+                      fontFamily: "DM Sans, sans-serif",
+                    }}
+                  />
+                </div>
+
+                {/* State + Category row */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-xs font-semibold mb-1.5 block" style={{ color: "rgba(255,255,255,0.6)" }}>
+                      State *
+                    </label>
+                    <select
+                      value={formState}
+                      onChange={(e) => setFormState(e.target.value)}
+                      className="w-full px-3 py-2.5 rounded-xl text-sm outline-none appearance-none cursor-pointer"
+                      style={{
+                        background: "rgba(255,255,255,0.05)",
+                        border: "1px solid rgba(255,255,255,0.1)",
+                        color: formState ? "rgba(255,255,255,0.9)" : "rgba(255,255,255,0.4)",
+                        fontFamily: "DM Sans, sans-serif",
+                      }}
+                    >
+                      <option value="" style={{ background: "#0A1023" }}>Select state</option>
+                      {STATES.map((s) => (
+                        <option key={s} value={s} style={{ background: "#0A1023" }}>{s}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold mb-1.5 block" style={{ color: "rgba(255,255,255,0.6)" }}>
+                      Category *
+                    </label>
+                    <select
+                      value={formCategory}
+                      onChange={(e) => setFormCategory(e.target.value)}
+                      className="w-full px-3 py-2.5 rounded-xl text-sm outline-none appearance-none cursor-pointer"
+                      style={{
+                        background: "rgba(255,255,255,0.05)",
+                        border: "1px solid rgba(255,255,255,0.1)",
+                        color: formCategory ? "rgba(255,255,255,0.9)" : "rgba(255,255,255,0.4)",
+                        fontFamily: "DM Sans, sans-serif",
+                      }}
+                    >
+                      <option value="" style={{ background: "#0A1023" }}>Select category</option>
+                      {CATEGORIES.map((c) => (
+                        <option key={c} value={c} style={{ background: "#0A1023" }}>{c}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                {/* Target signatures */}
+                <div>
+                  <label className="text-xs font-semibold mb-1.5 block" style={{ color: "rgba(255,255,255,0.6)" }}>
+                    Signature Target
+                  </label>
+                  <input
+                    type="number"
+                    value={formTarget}
+                    onChange={(e) => setFormTarget(e.target.value)}
+                    placeholder="1000"
+                    min="100"
+                    className="w-full px-3 py-2.5 rounded-xl text-sm outline-none transition-all duration-200"
+                    style={{
+                      background: "rgba(255,255,255,0.05)",
+                      border: "1px solid rgba(255,255,255,0.1)",
+                      color: "rgba(255,255,255,0.9)",
+                      fontFamily: "DM Sans, sans-serif",
+                    }}
+                  />
+                </div>
+
+                {/* Tags */}
+                <div>
+                  <label className="text-xs font-semibold mb-1.5 block" style={{ color: "rgba(255,255,255,0.6)" }}>
+                    Tags (comma separated)
+                  </label>
+                  <input
+                    type="text"
+                    value={formTags}
+                    onChange={(e) => setFormTags(e.target.value)}
+                    placeholder="e.g., transport, public, safety"
+                    className="w-full px-3 py-2.5 rounded-xl text-sm outline-none transition-all duration-200"
+                    style={{
+                      background: "rgba(255,255,255,0.05)",
+                      border: "1px solid rgba(255,255,255,0.1)",
+                      color: "rgba(255,255,255,0.9)",
+                      fontFamily: "DM Sans, sans-serif",
+                    }}
+                  />
+                </div>
+
+                {/* Submit button */}
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.97 }}
+                  onClick={handleSubmitPetition}
+                  className="w-full py-3 rounded-xl text-sm font-bold text-white mt-2"
+                  style={{
+                    background: "linear-gradient(135deg, #0EA5E9, #6366F1)",
+                    boxShadow: "0 0 20px rgba(14,165,233,0.25)",
+                  }}
+                >
+                  Create Petition
+                </motion.button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
