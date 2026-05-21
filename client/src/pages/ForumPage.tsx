@@ -1,4 +1,4 @@
-/* ForumPage — GovLens Community Forum
+/* ForumPage — Community Discussion Boards
  * Discussion boards, trending topics, community cards
  * Glassmorphic Civic Premium design
  */
@@ -22,6 +22,7 @@ export default function ForumPage() {
   const [liked, setLiked] = useState<Set<string>>(new Set());
   const [allPosts, setAllPosts] = useState<ForumPost[]>(initialPosts);
   const [showForm, setShowForm] = useState(false);
+  const [selectedPost, setSelectedPost] = useState<ForumPost | null>(null);
 
   // Form state
   const [formTitle, setFormTitle] = useState("");
@@ -99,207 +100,194 @@ export default function ForumPage() {
           <h1 className="text-3xl font-extrabold text-white" style={{ fontFamily: "Syne, sans-serif" }}>
             Community Forum
           </h1>
-          <p className="mt-1 text-sm" style={{ color: "rgba(255,255,255,0.45)" }}>
-            Discuss public issues and engage with fellow citizens
+          <p className="text-sm mt-1" style={{ color: "rgba(255,255,255,0.5)" }}>
+            Discuss government decisions with fellow citizens
           </p>
         </div>
         <motion.button
-          whileHover={{ scale: 1.04 }}
-          whileTap={{ scale: 0.97 }}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
           onClick={() => setShowForm(true)}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-white"
+          className="flex items-center gap-2 px-4 py-2 rounded-xl font-semibold text-white transition-all"
           style={{
             background: "linear-gradient(135deg, #0EA5E9, #6366F1)",
-            boxShadow: "0 0 20px rgba(14,165,233,0.25)",
+            boxShadow: "0 0 20px rgba(14,165,233,0.3)",
           }}
         >
-          <MessageSquare size={16} /> New Post
+          <Plus size={18} /> New Post
         </motion.button>
       </motion.div>
 
       {/* Stats */}
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, delay: 0.1 }}
-        className="grid grid-cols-3 gap-3"
-      >
+      <div className="grid grid-cols-3 gap-3">
         {[
-          { label: "Total Posts", value: allPosts.length, icon: MessageSquare, color: "#0EA5E9" },
-          { label: "Trending", value: trending.length, icon: Flame, color: "#F59E0B" },
-          { label: "Total Views", value: allPosts.reduce((a, p) => a + p.views, 0).toLocaleString(), icon: Eye, color: "#6366F1" },
-        ].map((s, i) => (
+          { label: "Total Posts", value: allPosts.length },
+          { label: "Total Views", value: allPosts.reduce((sum, p) => sum + p.views, 0) },
+          { label: "Active Discussions", value: allPosts.filter((p) => p.replies > 0).length },
+        ].map((stat, i) => (
           <motion.div
-            key={s.label}
-            initial={{ opacity: 0, y: 12 }}
+            key={i}
+            initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.15 + i * 0.07 }}
-            className="stat-card"
+            transition={{ delay: i * 0.1 }}
+            className="p-4 rounded-xl"
+            style={{
+              background: "rgba(255,255,255,0.05)",
+              border: "1px solid rgba(255,255,255,0.1)",
+              backdropFilter: "blur(20px)",
+            }}
           >
-            <div className="w-8 h-8 rounded-lg flex items-center justify-center mb-2" style={{ background: `${s.color}18` }}>
-              <s.icon size={16} style={{ color: s.color }} />
-            </div>
-            <div className="text-xl font-bold text-white" style={{ fontFamily: "Syne, sans-serif" }}>{s.value}</div>
-            <div className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.4)" }}>{s.label}</div>
+            <p className="text-xs" style={{ color: "rgba(255,255,255,0.5)" }}>{stat.label}</p>
+            <p className="text-xl font-bold text-white mt-1">{stat.value}</p>
           </motion.div>
         ))}
-      </motion.div>
+      </div>
 
-      {/* Trending topics */}
-      {trending.length > 0 && (
-        <div>
-          <h3 className="text-sm font-bold text-white mb-3 flex items-center gap-2" style={{ fontFamily: "Syne, sans-serif" }}>
-            <Flame size={14} style={{ color: "#F59E0B" }} /> Trending Topics
-          </h3>
-          <div className="flex gap-2 flex-wrap">
-            {trending.map((post) => (
-              <span
-                key={post.id}
-                className="text-xs px-3 py-1.5 rounded-full font-medium cursor-pointer transition-all duration-200"
-                style={{
-                  background: "rgba(245,158,11,0.12)",
-                  border: "1px solid rgba(245,158,11,0.25)",
-                  color: "#F59E0B",
-                }}
-              >
-                🔥 {post.title.slice(0, 40)}...
-              </span>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Search + category filter */}
-      <div className="flex gap-3 flex-col sm:flex-row">
+      {/* Search & Filter */}
+      <div className="flex flex-col sm:flex-row gap-3">
         <div
-          className="flex items-center gap-2 px-3 py-2 rounded-xl flex-1"
-          style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" }}
+          className="flex-1 flex items-center gap-2 px-4 py-3 rounded-xl"
+          style={{
+            background: "rgba(255,255,255,0.05)",
+            border: "1px solid rgba(255,255,255,0.1)",
+          }}
         >
-          <Search size={14} style={{ color: "rgba(255,255,255,0.35)" }} />
+          <Search size={16} style={{ color: "rgba(255,255,255,0.4)" }} />
           <input
             type="text"
-            placeholder="Search discussions..."
+            placeholder="Search posts..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="bg-transparent text-sm outline-none flex-1"
+            className="bg-transparent outline-none flex-1 text-sm"
             style={{ color: "rgba(255,255,255,0.8)", fontFamily: "DM Sans, sans-serif" }}
           />
         </div>
+        <select
+          value={category}
+          onChange={(e) => setCategory(e.target.value)}
+          className="px-4 py-3 rounded-xl text-sm outline-none"
+          style={{
+            background: "rgba(255,255,255,0.05)",
+            border: "1px solid rgba(255,255,255,0.1)",
+            color: "rgba(255,255,255,0.8)",
+            fontFamily: "DM Sans, sans-serif",
+          }}
+        >
+          {CATEGORIES.map((cat) => (
+            <option key={cat} value={cat}>{cat}</option>
+          ))}
+        </select>
       </div>
 
-      {/* Category tabs */}
-      <div className="flex gap-2 flex-wrap">
-        {CATEGORIES.map((cat) => (
-          <button
-            key={cat}
-            onClick={() => setCategory(cat)}
-            className="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200"
-            style={{
-              background: category === cat ? "rgba(14,165,233,0.15)" : "rgba(255,255,255,0.04)",
-              border: `1px solid ${category === cat ? "rgba(14,165,233,0.3)" : "rgba(255,255,255,0.07)"}`,
-              color: category === cat ? "#0EA5E9" : "rgba(255,255,255,0.5)",
-            }}
-          >
-            {cat}
-          </button>
-        ))}
-      </div>
-
-      {/* Forum posts */}
-      <div className="space-y-4">
-        {filtered.map((post, i) => {
-          const isLiked = liked.has(post.id);
-          return (
-            <motion.div
-              key={post.id}
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.06 }}
-              className="rounded-2xl p-5 cursor-pointer transition-all duration-200"
-              style={{
-                background: "rgba(255,255,255,0.04)",
-                border: "1px solid rgba(255,255,255,0.07)",
-              }}
-              onMouseEnter={(e) => {
-                (e.currentTarget as HTMLDivElement).style.borderColor = "rgba(14,165,233,0.2)";
-                (e.currentTarget as HTMLDivElement).style.background = "rgba(255,255,255,0.06)";
-              }}
-              onMouseLeave={(e) => {
-                (e.currentTarget as HTMLDivElement).style.borderColor = "rgba(255,255,255,0.07)";
-                (e.currentTarget as HTMLDivElement).style.background = "rgba(255,255,255,0.04)";
-              }}
-            >
-              <div className="flex items-start gap-4">
-                {/* Avatar */}
-                <div
-                  className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold text-white flex-shrink-0"
-                  style={{
-                    background: `linear-gradient(135deg, #0EA5E9, #6366F1)`,
-                    fontFamily: "Syne, sans-serif",
-                  }}
-                >
-                  {post.author[0]}
+      {/* Trending Section */}
+      {trending.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.2 }}
+          className="space-y-3"
+        >
+          <div className="flex items-center gap-2">
+            <Flame size={18} style={{ color: "#F59E0B" }} />
+            <h2 className="text-lg font-bold text-white" style={{ fontFamily: "Syne, sans-serif" }}>Trending Discussions</h2>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {trending.slice(0, 2).map((post) => (
+              <motion.div
+                key={post.id}
+                whileHover={{ scale: 1.02 }}
+                onClick={() => setSelectedPost(post)}
+                className="p-4 rounded-xl cursor-pointer transition-all"
+                style={{
+                  background: "rgba(255,255,255,0.08)",
+                  border: "1px solid rgba(255,165,0,0.3)",
+                  backdropFilter: "blur(20px)",
+                }}
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex-1 min-w-0">
+                    <p className="font-bold text-white truncate">{post.title}</p>
+                    <p className="text-xs mt-2 line-clamp-2" style={{ color: "rgba(255,255,255,0.6)" }}>{post.content}</p>
+                  </div>
+                  <Flame size={16} style={{ color: "#F59E0B", flexShrink: 0 }} />
                 </div>
-
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-start justify-between gap-2 flex-wrap">
-                    <h3 className="text-sm font-bold text-white leading-snug">{post.title}</h3>
-                    {post.trending && (
-                      <span className="text-xs px-2 py-0.5 rounded-full flex-shrink-0" style={{ background: "rgba(245,158,11,0.15)", color: "#F59E0B", border: "1px solid rgba(245,158,11,0.25)" }}>
-                        🔥 Trending
-                      </span>
-                    )}
-                  </div>
-
-                  <p className="text-xs leading-relaxed mt-1 mb-3" style={{ color: "rgba(255,255,255,0.5)" }}>
-                    {post.content.slice(0, 140)}...
-                  </p>
-
-                  <div className="flex items-center gap-4 flex-wrap">
-                    <div className="flex items-center gap-1 text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>
-                      <MapPin size={11} /> {post.state}
-                    </div>
-                    <div className="flex items-center gap-1 text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>
-                      <Tag size={11} /> {post.category}
-                    </div>
-                    <div className="flex items-center gap-1 text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>
-                      by {post.author} · {post.createdAt}
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-4 mt-3">
-                    <button
-                      onClick={(e) => { e.stopPropagation(); handleLike(post.id); }}
-                      className="flex items-center gap-1.5 text-xs transition-all duration-200"
-                      style={{ color: isLiked ? "#EC4899" : "rgba(255,255,255,0.4)" }}
-                    >
-                      <Heart size={13} fill={isLiked ? "#EC4899" : "none"} />
-                      {post.likes}
-                    </button>
-                    <div className="flex items-center gap-1.5 text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>
-                      <Reply size={13} />
-                      {post.replies}
-                    </div>
-                    <div className="flex items-center gap-1.5 text-xs" style={{ color: "rgba(255,255,255,0.3)" }}>
-                      <Eye size={13} />
-                      {post.views.toLocaleString()}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          );
-        })}
-      </div>
-
-      {filtered.length === 0 && (
-        <div className="text-center py-16" style={{ color: "rgba(255,255,255,0.3)" }}>
-          <MessageSquare size={40} className="mx-auto mb-3 opacity-30" />
-          <p className="text-sm">No posts found matching your search.</p>
-        </div>
+              </motion.div>
+            ))}
+          </div>
+        </motion.div>
       )}
 
-      {/* Create Post Modal */}
+      {/* Posts List */}
+      <div className="space-y-3">
+        <h2 className="text-lg font-bold text-white" style={{ fontFamily: "Syne, sans-serif" }}>
+          {category === "All" ? "All Posts" : `${category} Posts`}
+        </h2>
+        {filtered.length === 0 ? (
+          <div className="text-center py-12" style={{ color: "rgba(255,255,255,0.4)" }}>
+            <MessageSquare size={32} className="mx-auto mb-3 opacity-50" />
+            <p>No posts found</p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {filtered.map((post) => (
+              <motion.div
+                key={post.id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                whileHover={{ scale: 1.01 }}
+                onClick={() => setSelectedPost(post)}
+                className="p-4 rounded-xl cursor-pointer transition-all"
+                style={{
+                  background: "rgba(255,255,255,0.05)",
+                  border: "1px solid rgba(255,255,255,0.1)",
+                  backdropFilter: "blur(20px)",
+                }}
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex-1 min-w-0">
+                    <p className="font-bold text-white">{post.title}</p>
+                    <p className="text-sm mt-2 line-clamp-2" style={{ color: "rgba(255,255,255,0.6)" }}>{post.content}</p>
+                    <div className="flex items-center gap-3 mt-3 flex-wrap">
+                      <span className="text-xs px-2 py-1 rounded-full" style={{ background: "rgba(99,102,241,0.2)", color: "#A5B4FC" }}>
+                        {post.category}
+                      </span>
+                      <div className="flex items-center gap-1 text-xs" style={{ color: "rgba(255,255,255,0.5)" }}>
+                        <MapPin size={12} /> {post.state}
+                      </div>
+                      <p className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>by {post.author} · {post.createdAt}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3 flex-shrink-0">
+                    <div className="text-right">
+                      <div className="flex items-center gap-1 justify-end text-xs" style={{ color: "rgba(255,255,255,0.5)" }}>
+                        <Eye size={12} /> {post.views}
+                      </div>
+                      <div className="flex items-center gap-1 justify-end text-xs" style={{ color: "rgba(255,255,255,0.5)" }}>
+                        <Reply size={12} /> {post.replies}
+                      </div>
+                    </div>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleLike(post.id);
+                      }}
+                      className="p-2 rounded-lg transition-all"
+                      style={{
+                        background: liked.has(post.id) ? "rgba(239,68,68,0.2)" : "rgba(255,255,255,0.05)",
+                        color: liked.has(post.id) ? "#EF4444" : "rgba(255,255,255,0.5)",
+                      }}
+                    >
+                      <Heart size={16} fill={liked.has(post.id) ? "#EF4444" : "none"} />
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* New Post Form Dialog */}
       <AnimatePresence>
         {showForm && (
           <motion.div
@@ -307,156 +295,216 @@ export default function ForumPage() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-50 flex items-center justify-center p-4"
-            style={{ background: "rgba(0,0,0,0.7)", backdropFilter: "blur(8px)" }}
-            onClick={(e) => { if (e.target === e.currentTarget) setShowForm(false); }}
+            style={{ background: "rgba(0,0,0,0.7)" }}
+            onClick={() => setShowForm(false)}
           >
             <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              transition={{ duration: 0.2 }}
-              className="w-full max-w-lg rounded-2xl p-6 max-h-[85vh] overflow-y-auto"
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="w-full max-w-lg rounded-2xl p-6 space-y-4"
               style={{
-                background: "rgba(10,16,35,0.98)",
-                border: "1px solid rgba(14,165,233,0.2)",
-                boxShadow: "0 0 60px rgba(14,165,233,0.1)",
+                background: "rgba(10, 16, 35, 0.95)",
+                border: "1px solid rgba(255,255,255,0.1)",
+                backdropFilter: "blur(20px)",
               }}
+              onClick={(e) => e.stopPropagation()}
             >
-              {/* Modal header */}
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-bold text-white" style={{ fontFamily: "Syne, sans-serif" }}>
-                  Create New Post
-                </h2>
-                <button
-                  onClick={() => setShowForm(false)}
-                  className="w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-200"
-                  style={{ background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.5)" }}
-                >
-                  <X size={16} />
+              <div className="flex items-center justify-between">
+                <h3 className="text-xl font-bold text-white" style={{ fontFamily: "Syne, sans-serif" }}>Create New Post</h3>
+                <button onClick={() => setShowForm(false)} className="text-white/50 hover:text-white">
+                  <X size={20} />
                 </button>
               </div>
 
-              {/* Form */}
-              <div className="space-y-4">
-                {/* Title */}
-                <div>
-                  <label className="text-xs font-semibold mb-1.5 block" style={{ color: "rgba(255,255,255,0.6)" }}>
-                    Post Title *
-                  </label>
-                  <input
-                    type="text"
-                    value={formTitle}
-                    onChange={(e) => setFormTitle(e.target.value)}
-                    placeholder="e.g., Discussion on new MRT line proposal"
-                    className="w-full px-3 py-2.5 rounded-xl text-sm outline-none transition-all duration-200"
-                    style={{
-                      background: "rgba(255,255,255,0.05)",
-                      border: "1px solid rgba(255,255,255,0.1)",
-                      color: "rgba(255,255,255,0.9)",
-                      fontFamily: "DM Sans, sans-serif",
-                    }}
-                  />
-                </div>
+              <input
+                type="text"
+                placeholder="Post title"
+                value={formTitle}
+                onChange={(e) => setFormTitle(e.target.value)}
+                className="w-full px-4 py-2 rounded-lg outline-none text-sm"
+                style={{
+                  background: "rgba(255,255,255,0.05)",
+                  border: "1px solid rgba(255,255,255,0.1)",
+                  color: "rgba(255,255,255,0.8)",
+                  fontFamily: "DM Sans, sans-serif",
+                }}
+              />
 
-                {/* Content */}
-                <div>
-                  <label className="text-xs font-semibold mb-1.5 block" style={{ color: "rgba(255,255,255,0.6)" }}>
-                    Content *
-                  </label>
-                  <textarea
-                    value={formContent}
-                    onChange={(e) => setFormContent(e.target.value)}
-                    placeholder="Share your thoughts, questions, or ideas with the community..."
-                    rows={5}
-                    className="w-full px-3 py-2.5 rounded-xl text-sm outline-none resize-none transition-all duration-200"
-                    style={{
-                      background: "rgba(255,255,255,0.05)",
-                      border: "1px solid rgba(255,255,255,0.1)",
-                      color: "rgba(255,255,255,0.9)",
-                      fontFamily: "DM Sans, sans-serif",
-                    }}
-                  />
-                </div>
+              <textarea
+                placeholder="Post content"
+                value={formContent}
+                onChange={(e) => setFormContent(e.target.value)}
+                rows={4}
+                className="w-full px-4 py-2 rounded-lg outline-none text-sm resize-none"
+                style={{
+                  background: "rgba(255,255,255,0.05)",
+                  border: "1px solid rgba(255,255,255,0.1)",
+                  color: "rgba(255,255,255,0.8)",
+                  fontFamily: "DM Sans, sans-serif",
+                }}
+              />
 
-                {/* State + Category row */}
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="text-xs font-semibold mb-1.5 block" style={{ color: "rgba(255,255,255,0.6)" }}>
-                      State *
-                    </label>
-                    <select
-                      value={formState}
-                      onChange={(e) => setFormState(e.target.value)}
-                      className="w-full px-3 py-2.5 rounded-xl text-sm outline-none appearance-none cursor-pointer"
-                      style={{
-                        background: "rgba(255,255,255,0.05)",
-                        border: "1px solid rgba(255,255,255,0.1)",
-                        color: formState ? "rgba(255,255,255,0.9)" : "rgba(255,255,255,0.4)",
-                        fontFamily: "DM Sans, sans-serif",
-                      }}
-                    >
-                      <option value="" style={{ background: "#0A1023" }}>Select state</option>
-                      {STATES.map((s) => (
-                        <option key={s} value={s} style={{ background: "#0A1023" }}>{s}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="text-xs font-semibold mb-1.5 block" style={{ color: "rgba(255,255,255,0.6)" }}>
-                      Category *
-                    </label>
-                    <select
-                      value={formCategory}
-                      onChange={(e) => setFormCategory(e.target.value)}
-                      className="w-full px-3 py-2.5 rounded-xl text-sm outline-none appearance-none cursor-pointer"
-                      style={{
-                        background: "rgba(255,255,255,0.05)",
-                        border: "1px solid rgba(255,255,255,0.1)",
-                        color: formCategory ? "rgba(255,255,255,0.9)" : "rgba(255,255,255,0.4)",
-                        fontFamily: "DM Sans, sans-serif",
-                      }}
-                    >
-                      <option value="" style={{ background: "#0A1023" }}>Select category</option>
-                      {CATEGORIES.filter((c) => c !== "All").map((c) => (
-                        <option key={c} value={c} style={{ background: "#0A1023" }}>{c}</option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
+              <select
+                value={formState}
+                onChange={(e) => setFormState(e.target.value)}
+                className="w-full px-4 py-2 rounded-lg outline-none text-sm"
+                style={{
+                  background: "rgba(255,255,255,0.05)",
+                  border: "1px solid rgba(255,255,255,0.1)",
+                  color: "rgba(255,255,255,0.8)",
+                  fontFamily: "DM Sans, sans-serif",
+                }}
+              >
+                <option value="">Select state</option>
+                {STATES.map((s) => (
+                  <option key={s} value={s}>{s}</option>
+                ))}
+              </select>
 
-                {/* Tags */}
-                <div>
-                  <label className="text-xs font-semibold mb-1.5 block" style={{ color: "rgba(255,255,255,0.6)" }}>
-                    Tags (comma separated)
-                  </label>
-                  <input
-                    type="text"
-                    value={formTags}
-                    onChange={(e) => setFormTags(e.target.value)}
-                    placeholder="e.g., transport, mrt, public"
-                    className="w-full px-3 py-2.5 rounded-xl text-sm outline-none transition-all duration-200"
-                    style={{
-                      background: "rgba(255,255,255,0.05)",
-                      border: "1px solid rgba(255,255,255,0.1)",
-                      color: "rgba(255,255,255,0.9)",
-                      fontFamily: "DM Sans, sans-serif",
-                    }}
-                  />
-                </div>
+              <select
+                value={formCategory}
+                onChange={(e) => setFormCategory(e.target.value)}
+                className="w-full px-4 py-2 rounded-lg outline-none text-sm"
+                style={{
+                  background: "rgba(255,255,255,0.05)",
+                  border: "1px solid rgba(255,255,255,0.1)",
+                  color: "rgba(255,255,255,0.8)",
+                  fontFamily: "DM Sans, sans-serif",
+                }}
+              >
+                <option value="">Select category</option>
+                {CATEGORIES.filter((c) => c !== "All").map((c) => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
+              </select>
 
-                {/* Submit button */}
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.97 }}
+              <input
+                type="text"
+                placeholder="Tags (comma-separated)"
+                value={formTags}
+                onChange={(e) => setFormTags(e.target.value)}
+                className="w-full px-4 py-2 rounded-lg outline-none text-sm"
+                style={{
+                  background: "rgba(255,255,255,0.05)",
+                  border: "1px solid rgba(255,255,255,0.1)",
+                  color: "rgba(255,255,255,0.8)",
+                  fontFamily: "DM Sans, sans-serif",
+                }}
+              />
+
+              <div className="flex gap-3 pt-2">
+                <button
+                  onClick={() => setShowForm(false)}
+                  className="flex-1 px-4 py-2 rounded-lg font-semibold transition-all"
+                  style={{
+                    background: "rgba(255,255,255,0.05)",
+                    border: "1px solid rgba(255,255,255,0.1)",
+                    color: "rgba(255,255,255,0.7)",
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
                   onClick={handleSubmitPost}
-                  className="w-full py-3 rounded-xl text-sm font-bold text-white mt-2"
+                  className="flex-1 px-4 py-2 rounded-lg font-semibold text-white transition-all"
                   style={{
                     background: "linear-gradient(135deg, #0EA5E9, #6366F1)",
-                    boxShadow: "0 0 20px rgba(14,165,233,0.25)",
                   }}
                 >
                   Publish Post
-                </motion.button>
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Post Detail Modal */}
+      <AnimatePresence>
+        {selectedPost && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4"
+            style={{ background: "rgba(0,0,0,0.7)" }}
+            onClick={() => setSelectedPost(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="w-full max-w-2xl rounded-2xl p-6 max-h-96 overflow-y-auto"
+              style={{
+                background: "rgba(10, 16, 35, 0.95)",
+                border: "1px solid rgba(255,255,255,0.1)",
+                backdropFilter: "blur(20px)",
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-start justify-between gap-3 mb-4">
+                <div className="flex-1 min-w-0">
+                  <h2 className="text-2xl font-bold text-white" style={{ fontFamily: "Syne, sans-serif" }}>{selectedPost.title}</h2>
+                  <div className="flex items-center gap-2 mt-2 flex-wrap">
+                    <span className="text-xs px-2 py-1 rounded-full" style={{ background: "rgba(99,102,241,0.2)", color: "#A5B4FC" }}>
+                      {selectedPost.category}
+                    </span>
+                    <div className="flex items-center gap-1 text-xs" style={{ color: "rgba(255,255,255,0.5)" }}>
+                      <MapPin size={12} /> {selectedPost.state}
+                    </div>
+                  </div>
+                </div>
+                <button onClick={() => setSelectedPost(null)} className="text-white/50 hover:text-white flex-shrink-0">
+                  <X size={20} />
+                </button>
+              </div>
+
+              <div className="flex items-center gap-4 mb-4 pb-4" style={{ borderBottom: "1px solid rgba(255,255,255,0.1)" }}>
+                <div className="w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold text-white" style={{ background: "linear-gradient(135deg, #0EA5E9, #6366F1)" }}>
+                  {selectedPost.author[0]}
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-white">{selectedPost.author}</p>
+                  <p className="text-xs" style={{ color: "rgba(255,255,255,0.5)" }}>{selectedPost.createdAt}</p>
+                </div>
+              </div>
+
+              <p className="text-white mb-4" style={{ color: "rgba(255,255,255,0.8)", fontFamily: "DM Sans, sans-serif", lineHeight: "1.6" }}>
+                {selectedPost.content}
+              </p>
+
+              {selectedPost.tags && selectedPost.tags.length > 0 && (
+                <div className="flex items-center gap-2 flex-wrap mb-4">
+                  {selectedPost.tags.map((tag) => (
+                    <span key={tag} className="text-xs px-2 py-1 rounded-full" style={{ background: "rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.6)" }}>
+                      #{tag}
+                    </span>
+                  ))}
+                </div>
+              )}
+
+              <div className="flex items-center gap-6 pt-4" style={{ borderTop: "1px solid rgba(255,255,255,0.1)" }}>
+                <div className="flex items-center gap-2 text-sm" style={{ color: "rgba(255,255,255,0.5)" }}>
+                  <Eye size={16} /> {selectedPost.views} views
+                </div>
+                <div className="flex items-center gap-2 text-sm" style={{ color: "rgba(255,255,255,0.5)" }}>
+                  <Reply size={16} /> {selectedPost.replies} replies
+                </div>
+                <button
+                  onClick={() => {
+                    handleLike(selectedPost.id);
+                    setSelectedPost(null);
+                  }}
+                  className="flex items-center gap-2 text-sm px-3 py-1 rounded-lg transition-all"
+                  style={{
+                    background: liked.has(selectedPost.id) ? "rgba(239,68,68,0.2)" : "rgba(255,255,255,0.05)",
+                    color: liked.has(selectedPost.id) ? "#EF4444" : "rgba(255,255,255,0.5)",
+                  }}
+                >
+                  <Heart size={16} fill={liked.has(selectedPost.id) ? "#EF4444" : "none"} />
+                  {selectedPost.likes} likes
+                </button>
               </div>
             </motion.div>
           </motion.div>

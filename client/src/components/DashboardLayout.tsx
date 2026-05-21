@@ -1,4 +1,4 @@
-/* DashboardLayout — GovLens Glassmorphic Civic Premium
+/* DashboardLayout — GovLens Main Layout
  * Fixed left sidebar (64px collapsed / 240px expanded) + top bar + main content
  * Dark navy background with glass sidebar
  */
@@ -35,6 +35,8 @@ interface DashboardLayoutProps {
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [location] = useLocation();
+  const [notificationOpen, setNotificationOpen] = useState(false);
+  const [accountOpen, setAccountOpen] = useState(false);
 
   return (
     <div className="flex h-screen overflow-hidden" style={{ background: "#060B18" }}>
@@ -153,7 +155,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       </motion.aside>
 
       {/* Main area */}
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
         {/* Top bar */}
         <header
           className="h-16 flex items-center justify-between px-6 flex-shrink-0 z-20"
@@ -193,6 +195,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           <div className="flex items-center gap-3">
             {/* Notification */}
             <button
+              onClick={() => setNotificationOpen(!notificationOpen)}
               className="relative p-2 rounded-lg transition-all duration-200"
               style={{ color: "rgba(255,255,255,0.5)" }}
               onMouseEnter={(e) => {
@@ -211,18 +214,90 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
               />
             </button>
 
-            {/* Avatar */}
-            <div
-              className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white"
+            {/* Avatar/Account */}
+            <button
+              onClick={() => setAccountOpen(!accountOpen)}
+              className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white transition-all duration-200 hover:scale-110"
               style={{
                 background: "linear-gradient(135deg, #0EA5E9, #6366F1)",
                 fontFamily: "Syne, sans-serif",
               }}
             >
               R
-            </div>
+            </button>
           </div>
         </header>
+
+        {/* Notification Panel */}
+        <AnimatePresence>
+          {notificationOpen && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.2 }}
+              className="absolute top-16 right-6 w-80 rounded-2xl p-4 z-50"
+              style={{
+                background: "rgba(10, 16, 35, 0.95)",
+                border: "1px solid rgba(255,255,255,0.1)",
+                backdropFilter: "blur(20px)",
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h3 className="text-sm font-bold text-white mb-3" style={{ fontFamily: "Syne, sans-serif" }}>Notifications</h3>
+              <div className="space-y-2 max-h-96 overflow-y-auto">
+                <div className="p-3 rounded-lg" style={{ background: "rgba(14,165,233,0.1)", borderLeft: "3px solid #0EA5E9" }}>
+                  <p className="text-xs font-semibold text-white">New petition reached 500 signatures</p>
+                  <p className="text-xs mt-1" style={{ color: "rgba(255,255,255,0.5)" }}>5 minutes ago</p>
+                </div>
+                <div className="p-3 rounded-lg" style={{ background: "rgba(34,197,94,0.1)", borderLeft: "3px solid #22C55E" }}>
+                  <p className="text-xs font-semibold text-white">Your report status updated to Investigating</p>
+                  <p className="text-xs mt-1" style={{ color: "rgba(255,255,255,0.5)" }}>2 hours ago</p>
+                </div>
+                <div className="p-3 rounded-lg" style={{ background: "rgba(99,102,241,0.1)", borderLeft: "3px solid #6366F1" }}>
+                  <p className="text-xs font-semibold text-white">New reply to your forum post</p>
+                  <p className="text-xs mt-1" style={{ color: "rgba(255,255,255,0.5)" }}>1 day ago</p>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Account Panel */}
+        <AnimatePresence>
+          {accountOpen && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.2 }}
+              className="absolute top-16 right-6 w-64 rounded-2xl p-4 z-50"
+              style={{
+                background: "rgba(10, 16, 35, 0.95)",
+                border: "1px solid rgba(255,255,255,0.1)",
+                backdropFilter: "blur(20px)",
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center gap-3 mb-4 pb-3" style={{ borderBottom: "1px solid rgba(255,255,255,0.1)" }}>
+                <div className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold text-white" style={{ background: "linear-gradient(135deg, #0EA5E9, #6366F1)" }}>R</div>
+                <div>
+                  <p className="text-sm font-semibold text-white">Rajeev Kumar</p>
+                  <p className="text-xs" style={{ color: "rgba(255,255,255,0.5)" }}>Citizen</p>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <button className="w-full text-left px-3 py-2 rounded-lg text-sm transition-all" style={{ color: "rgba(255,255,255,0.7)" }} onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.06)")} onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}>👤 My Profile</button>
+                <button className="w-full text-left px-3 py-2 rounded-lg text-sm transition-all" style={{ color: "rgba(255,255,255,0.7)" }} onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.06)")} onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}>⭐ My Petitions</button>
+                <button className="w-full text-left px-3 py-2 rounded-lg text-sm transition-all" style={{ color: "rgba(255,255,255,0.7)" }} onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.06)")} onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}>📝 My Reports</button>
+                <button className="w-full text-left px-3 py-2 rounded-lg text-sm transition-all" style={{ color: "rgba(255,255,255,0.7)" }} onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.06)")} onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}>⚙️ Settings</button>
+                <div style={{ borderTop: "1px solid rgba(255,255,255,0.1)", marginTop: "8px", paddingTop: "8px" }}>
+                  <button className="w-full text-left px-3 py-2 rounded-lg text-sm transition-all" style={{ color: "#EF4444" }} onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(239,68,68,0.1)")} onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}>🚪 Logout</button>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Page content */}
         <main className="flex-1 overflow-y-auto">
