@@ -6,7 +6,3 @@
 - [x] Make "Submit Report" button functional with form and persistent state
 - [x] Verify VotingPage works consistently across multiple polls/interactions
 - [x] Add explicit UX handling for repeat voting behavior (one vote per poll, changing a vote)
-- [x] Make Notification button clickable with notifications panel
-- [x] Make Account button clickable with user account settings panel
-- [x] Add clickable detail modals for Forum posts showing full text
-- [x] Add clickable detail modals for Report cards showing full text
