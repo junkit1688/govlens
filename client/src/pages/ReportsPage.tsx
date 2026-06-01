@@ -20,28 +20,28 @@ const CATEGORY_CONFIG: Record<CitizenReport["category"], { label: string; color:
 
 const REPORT_IMAGE_FALLBACKS: Record<CitizenReport["category"], { url: string; alt: string }> = {
   pothole: {
-    url: "https://commons.wikimedia.org/wiki/Special:Redirect/file/A_Pothole_in_Broadmoor.jpg",
-    alt: "Close-up photo of a pothole in the road",
+    url: "https://www.malaymail.com/malaymail/uploads/images/2022/11/17/69248.jpg",
+    alt: "A Malaysian road user repairing a pothole in Tanjong Karang",
   },
   streetlight: {
     url: "https://images.unsplash.com/photo-1766198971304-32d71f18745c?auto=format&fit=crop&w=900&q=80",
-    alt: "Dark road at night lit by a single streetlight",
+    alt: "Kuala Lumpur highway at night with road lights",
   },
   road: {
-    url: "https://commons.wikimedia.org/wiki/Special:Redirect/file/FEMA_-_43256_-_Damaged_road_in_California.jpg",
-    alt: "Damaged road surface with broken asphalt",
+    url: "https://apicms.thestar.com.my/uploads/images/2024/12/20/3077907.jpg",
+    alt: "Pothole on Jalan Ho Lok Park in Ipoh",
   },
   sanitation: {
-    url: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Garbage_Street_%2835972464294%29.jpg",
-    alt: "Garbage bags left along a street",
+    url: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Kudat_Sabah_Garbage-Collection-Truck-01.jpg",
+    alt: "Garbage collection truck in Kudat, Sabah, Malaysia",
   },
   flooding: {
-    url: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Flooded_street_in_Sacramento_with_stop_sign_and_whirlpool.jpg",
-    alt: "Flooded street with standing water",
+    url: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Floods_in_Kota_Tinggi_(December_2006_-_January_2007).jpg",
+    alt: "Flooded road area in Kota Tinggi, Johor",
   },
   other: {
-    url: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Fallen_tree_blocking_the_path%2C_by_the_Esk_-_geograph.org.uk_-_1333466.jpg",
-    alt: "Fallen tree blocking a public path",
+    url: "https://apicms.thestar.com.my/uploads/images/2024/05/25/2714590.jpg",
+    alt: "Fallen tree blocking a road in Bukit Gasing",
   },
 };
 

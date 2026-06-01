@@ -473,8 +473,8 @@ export const citizenReports: CitizenReport[] = [
     reportedAt: "2025-05-01",
     reporter: "Ahmad Zaki",
     upvotes: 45,
-    imageUrl: "https://commons.wikimedia.org/wiki/Special:Redirect/file/A_Pothole_in_Broadmoor.jpg",
-    imageAlt: "Close-up photo of a pothole in the road",
+    imageUrl: "https://www.malaymail.com/malaymail/uploads/images/2022/11/17/69248.jpg",
+    imageAlt: "A Malaysian road user repairing a pothole in Tanjong Karang",
   },
   {
     id: "r2",
@@ -488,7 +488,7 @@ export const citizenReports: CitizenReport[] = [
     reporter: "Nurul Hana",
     upvotes: 32,
     imageUrl: "https://images.unsplash.com/photo-1766198971304-32d71f18745c?auto=format&fit=crop&w=900&q=80",
-    imageAlt: "Dark road at night lit by a single streetlight",
+    imageAlt: "Kuala Lumpur highway at night with road lights",
   },
   {
     id: "r3",
@@ -501,8 +501,8 @@ export const citizenReports: CitizenReport[] = [
     reportedAt: "2025-04-28",
     reporter: "Chen Wei Liang",
     upvotes: 78,
-    imageUrl: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Garbage_Street_%2835972464294%29.jpg",
-    imageAlt: "Garbage bags left along a street",
+    imageUrl: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Kudat_Sabah_Garbage-Collection-Truck-01.jpg",
+    imageAlt: "Garbage collection truck in Kudat, Sabah, Malaysia",
   },
   {
     id: "r4",
@@ -515,8 +515,8 @@ export const citizenReports: CitizenReport[] = [
     reportedAt: "2025-05-05",
     reporter: "Rajendran Pillai",
     upvotes: 56,
-    imageUrl: "https://commons.wikimedia.org/wiki/Special:Redirect/file/FEMA_-_43256_-_Damaged_road_in_California.jpg",
-    imageAlt: "Damaged road surface with broken asphalt",
+    imageUrl: "https://apicms.thestar.com.my/uploads/images/2024/12/20/3077907.jpg",
+    imageAlt: "Pothole on Jalan Ho Lok Park in Ipoh",
   },
   {
     id: "r5",
@@ -529,8 +529,8 @@ export const citizenReports: CitizenReport[] = [
     reportedAt: "2025-05-07",
     reporter: "Faridah Mohd",
     upvotes: 124,
-    imageUrl: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Flooded_street_in_Sacramento_with_stop_sign_and_whirlpool.jpg",
-    imageAlt: "Flooded street with standing water",
+    imageUrl: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Floods_in_Kota_Tinggi_(December_2006_-_January_2007).jpg",
+    imageAlt: "Flooded road area in Kota Tinggi, Johor",
   },
   {
     id: "r6",
@@ -543,8 +543,8 @@ export const citizenReports: CitizenReport[] = [
     reportedAt: "2025-05-02",
     reporter: "Benedict Lim",
     upvotes: 19,
-    imageUrl: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Fallen_tree_blocking_the_path%2C_by_the_Esk_-_geograph.org.uk_-_1333466.jpg",
-    imageAlt: "Fallen tree blocking a public path",
+    imageUrl: "https://apicms.thestar.com.my/uploads/images/2024/05/25/2714590.jpg",
+    imageAlt: "Fallen tree blocking a road in Bukit Gasing",
   },
 ];
 
