@@ -31,6 +31,7 @@ export default function PetitionsPage() {
   const [signed, setSigned] = useState<Set<string>>(new Set());
   const [allPetitions, setAllPetitions] = useState<Petition[]>(initialPetitions);
   const [showForm, setShowForm] = useState(false);
+  const [selectedPetition, setSelectedPetition] = useState<Petition | null>(null);
 
   // Form state
   const [formTitle, setFormTitle] = useState("");
@@ -198,7 +199,8 @@ export default function PetitionsPage() {
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.06 }}
-              className="rounded-2xl p-5"
+              className="rounded-2xl p-5 cursor-pointer transition-all duration-200"
+              onClick={() => setSelectedPetition(petition)}
               style={{
                 background: "rgba(255,255,255,0.04)",
                 border: "1px solid rgba(255,255,255,0.07)",
@@ -219,8 +221,8 @@ export default function PetitionsPage() {
                 </span>
               </div>
 
-              <p className="text-xs leading-relaxed mb-3" style={{ color: "rgba(255,255,255,0.5)" }}>
-                {petition.description.slice(0, 120)}...
+              <p className="text-xs leading-relaxed mb-3" style={{ color: "rgba(255,255,255,0.55)" }}>
+                {petition.description}
               </p>
 
               {/* Meta */}
@@ -273,7 +275,10 @@ export default function PetitionsPage() {
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.97 }}
-                  onClick={() => handleSign(petition.id)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleSign(petition.id);
+                  }}
                   className="w-full py-2 rounded-xl text-sm font-semibold transition-all duration-200"
                   style={{
                     background: isSigned ? "rgba(34,197,94,0.15)" : "rgba(14,165,233,0.15)",
@@ -475,6 +480,57 @@ export default function PetitionsPage() {
                 >
                   Create Petition
                 </motion.button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+        {selectedPetition && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4"
+            style={{ background: "rgba(0,0,0,0.7)", backdropFilter: "blur(8px)" }}
+            onClick={(e) => { if (e.target === e.currentTarget) setSelectedPetition(null); }}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              transition={{ duration: 0.2 }}
+              className="w-full max-w-2xl rounded-2xl p-6"
+              style={{
+                background: "rgba(10,16,35,0.98)",
+                border: "1px solid rgba(14,165,233,0.2)",
+                boxShadow: "0 0 60px rgba(14,165,233,0.1)",
+              }}
+            >
+              <div className="flex items-start justify-between gap-4 mb-4">
+                <div>
+                  <h2 className="text-xl font-bold text-white" style={{ fontFamily: "Syne, sans-serif" }}>
+                    {selectedPetition.title}
+                  </h2>
+                  <p className="text-xs mt-2" style={{ color: "rgba(255,255,255,0.45)" }}>
+                    {selectedPetition.state} · {selectedPetition.category} · by {selectedPetition.author}
+                  </p>
+                </div>
+                <button
+                  onClick={() => setSelectedPetition(null)}
+                  className="w-8 h-8 rounded-lg flex items-center justify-center"
+                  style={{ background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.5)" }}
+                >
+                  <X size={16} />
+                </button>
+              </div>
+              <p className="text-sm leading-relaxed mb-4" style={{ color: "rgba(255,255,255,0.7)" }}>
+                {selectedPetition.description}
+              </p>
+              <div className="flex gap-2 flex-wrap">
+                {selectedPetition.tags.map((tag) => (
+                  <span key={tag} className="text-xs px-2 py-1 rounded-full" style={{ background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.5)" }}>
+                    #{tag}
+                  </span>
+                ))}
               </div>
             </motion.div>
           </motion.div>

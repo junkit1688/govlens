@@ -293,7 +293,7 @@ export default function MalaysiaMap() {
                 cursor: "pointer",
               }}
             >
-              <div className="text-xs font-semibold truncate" style={{ color, fontFamily: "DM Sans, sans-serif" }}>
+              <div className="text-xs font-semibold leading-tight" style={{ color, fontFamily: "DM Sans, sans-serif" }}>
                 {state.id === "negeri-sembilan" ? "N.S." : state.id === "penang" ? "P.P." : state.id === "kuala-lumpur" ? "KL" : sd?.name.split(" ")[0] || state.name}
               </div>
               <div className="text-[10px] mt-0.5" style={{ color: "rgba(255,255,255,0.4)" }}>

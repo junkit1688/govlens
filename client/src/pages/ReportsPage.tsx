@@ -37,6 +37,7 @@ export default function ReportsPage() {
   const [upvoted, setUpvoted] = useState<Set<string>>(new Set());
   const [reports, setReports] = useState<CitizenReport[]>(initialReports);
   const [showForm, setShowForm] = useState(false);
+  const [selectedReport, setSelectedReport] = useState<CitizenReport | null>(null);
 
   // Form state
   const [formTitle, setFormTitle] = useState("");
@@ -236,7 +237,8 @@ export default function ReportsPage() {
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.05 }}
-              className="rounded-2xl p-5"
+              className="rounded-2xl p-5 cursor-pointer transition-all duration-200"
+              onClick={() => setSelectedReport(report)}
               style={{
                 background: "rgba(255,255,255,0.04)",
                 border: "1px solid rgba(255,255,255,0.07)",
@@ -277,7 +279,7 @@ export default function ReportsPage() {
 
               <h4 className="text-sm font-bold text-white mb-1">{report.title}</h4>
               <p className="text-xs leading-relaxed mb-3" style={{ color: "rgba(255,255,255,0.5)" }}>
-                {report.description.slice(0, 100)}...
+                {report.description}
               </p>
 
               <div className="space-y-1 mb-3">
@@ -293,7 +295,10 @@ export default function ReportsPage() {
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  onClick={() => handleUpvote(report.id)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleUpvote(report.id);
+                  }}
                   className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200"
                   style={{
                     background: isUpvoted ? "rgba(14,165,233,0.15)" : "rgba(255,255,255,0.06)",
@@ -521,6 +526,50 @@ export default function ReportsPage() {
                   Submit Report
                 </motion.button>
               </div>
+            </motion.div>
+          </motion.div>
+        )}
+        {selectedReport && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4"
+            style={{ background: "rgba(0,0,0,0.7)", backdropFilter: "blur(8px)" }}
+            onClick={(e) => { if (e.target === e.currentTarget) setSelectedReport(null); }}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              transition={{ duration: 0.2 }}
+              className="w-full max-w-2xl rounded-2xl p-6"
+              style={{
+                background: "rgba(10,16,35,0.98)",
+                border: "1px solid rgba(239,68,68,0.2)",
+                boxShadow: "0 0 60px rgba(239,68,68,0.1)",
+              }}
+            >
+              <div className="flex items-start justify-between gap-4 mb-4">
+                <div>
+                  <h2 className="text-xl font-bold text-white" style={{ fontFamily: "Syne, sans-serif" }}>
+                    {selectedReport.title}
+                  </h2>
+                  <p className="text-xs mt-2" style={{ color: "rgba(255,255,255,0.45)" }}>
+                    {selectedReport.location} · Reported {selectedReport.reportedAt} by {selectedReport.reporter}
+                  </p>
+                </div>
+                <button
+                  onClick={() => setSelectedReport(null)}
+                  className="w-8 h-8 rounded-lg flex items-center justify-center"
+                  style={{ background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.5)" }}
+                >
+                  <X size={16} />
+                </button>
+              </div>
+              <p className="text-sm leading-relaxed" style={{ color: "rgba(255,255,255,0.7)" }}>
+                {selectedReport.description}
+              </p>
             </motion.div>
           </motion.div>
         )}

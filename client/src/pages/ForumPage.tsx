@@ -164,7 +164,7 @@ export default function ForumPage() {
                   color: "#F59E0B",
                 }}
               >
-                🔥 {post.title.slice(0, 40)}...
+                🔥 {post.title}
               </span>
             ))}
           </div>
@@ -255,7 +255,7 @@ export default function ForumPage() {
                   </div>
 
                   <p className="text-xs leading-relaxed mt-1 mb-3" style={{ color: "rgba(255,255,255,0.5)" }}>
-                    {post.content.slice(0, 140)}...
+                    {post.content}
                   </p>
 
                   <div className="flex items-center gap-4 flex-wrap">
