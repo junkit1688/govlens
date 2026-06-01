@@ -277,7 +277,7 @@ export default function MalaysiaMap() {
 
       {/* State cards row */}
       <div className="mt-4 grid grid-cols-4 sm:grid-cols-8 gap-2">
-        {MALAYSIA_STATES.slice(0, 8).map((state) => {
+        {MALAYSIA_STATES.map((state) => {
           const sd = getStateData(state.id);
           const color = stateColors[state.id] || "#0EA5E9";
           return (

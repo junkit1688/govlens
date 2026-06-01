@@ -22,6 +22,7 @@ export default function ForumPage() {
   const [liked, setLiked] = useState<Set<string>>(new Set());
   const [allPosts, setAllPosts] = useState<ForumPost[]>(initialPosts);
   const [showForm, setShowForm] = useState(false);
+  const [selectedPost, setSelectedPost] = useState<ForumPost | null>(null);
 
   // Form state
   const [formTitle, setFormTitle] = useState("");
@@ -155,6 +156,7 @@ export default function ForumPage() {
             {trending.map((post) => (
               <span
                 key={post.id}
+                onClick={() => setSelectedPost(post)}
                 className="text-xs px-3 py-1.5 rounded-full font-medium cursor-pointer transition-all duration-200"
                 style={{
                   background: "rgba(245,158,11,0.12)",
@@ -216,6 +218,7 @@ export default function ForumPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.06 }}
               className="rounded-2xl p-5 cursor-pointer transition-all duration-200"
+              onClick={() => setSelectedPost(post)}
               style={{
                 background: "rgba(255,255,255,0.04)",
                 border: "1px solid rgba(255,255,255,0.07)",
@@ -301,6 +304,57 @@ export default function ForumPage() {
 
       {/* Create Post Modal */}
       <AnimatePresence>
+        {selectedPost && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4"
+            style={{ background: "rgba(0,0,0,0.7)", backdropFilter: "blur(8px)" }}
+            onClick={(e) => { if (e.target === e.currentTarget) setSelectedPost(null); }}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              transition={{ duration: 0.2 }}
+              className="w-full max-w-2xl rounded-2xl p-6"
+              style={{
+                background: "rgba(10,16,35,0.98)",
+                border: "1px solid rgba(14,165,233,0.2)",
+                boxShadow: "0 0 60px rgba(14,165,233,0.1)",
+              }}
+            >
+              <div className="flex items-start justify-between gap-4 mb-4">
+                <div>
+                  <h2 className="text-xl font-bold text-white" style={{ fontFamily: "Syne, sans-serif" }}>
+                    {selectedPost.title}
+                  </h2>
+                  <p className="text-xs mt-2" style={{ color: "rgba(255,255,255,0.45)" }}>
+                    by {selectedPost.author} · {selectedPost.state} · {selectedPost.createdAt}
+                  </p>
+                </div>
+                <button
+                  onClick={() => setSelectedPost(null)}
+                  className="w-8 h-8 rounded-lg flex items-center justify-center"
+                  style={{ background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.5)" }}
+                >
+                  <X size={16} />
+                </button>
+              </div>
+              <p className="text-sm leading-relaxed mb-4" style={{ color: "rgba(255,255,255,0.7)" }}>
+                {selectedPost.content}
+              </p>
+              <div className="flex gap-2 flex-wrap">
+                {selectedPost.tags.map((tag) => (
+                  <span key={tag} className="text-xs px-2 py-1 rounded-full" style={{ background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.5)" }}>
+                    #{tag}
+                  </span>
+                ))}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
         {showForm && (
           <motion.div
             initial={{ opacity: 0 }}

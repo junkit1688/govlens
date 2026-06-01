@@ -11,6 +11,7 @@ import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
 
 export default function VotingPage() {
   const [userVotes, setUserVotes] = useState<Record<string, number>>({});
+  const [allVotes, setAllVotes] = useState(votes);
 
   const handleVote = (voteId: string, optionIndex: number) => {
     if (userVotes[voteId] !== undefined) {
@@ -18,11 +19,24 @@ export default function VotingPage() {
       return;
     }
     setUserVotes((prev) => ({ ...prev, [voteId]: optionIndex }));
+    setAllVotes((prev) =>
+      prev.map((vote) =>
+        vote.id === voteId
+          ? {
+              ...vote,
+              totalVotes: vote.totalVotes + 1,
+              options: vote.options.map((option, index) =>
+                index === optionIndex ? { ...option, votes: option.votes + 1 } : option
+              ),
+            }
+          : vote
+      )
+    );
     toast.success("Vote recorded! Thank you for participating.");
   };
 
-  const totalVotesAll = votes.reduce((a, v) => a + v.totalVotes, 0);
-  const activeVotes = votes.filter((v) => v.status === "active").length;
+  const totalVotesAll = allVotes.reduce((a, v) => a + v.totalVotes, 0);
+  const activeVotes = allVotes.filter((v) => v.status === "active").length;
 
   return (
     <div className="p-6 space-y-6" style={{ background: "#060B18", minHeight: "100%" }}>
@@ -70,7 +84,7 @@ export default function VotingPage() {
 
       {/* Vote cards */}
       <div className="space-y-6">
-        {votes.map((vote, i) => {
+        {allVotes.map((vote, i) => {
           const userVoteIdx = userVotes[vote.id];
           const hasVoted = userVoteIdx !== undefined;
           const maxVotes = Math.max(...vote.options.map((o) => o.votes));

@@ -5,6 +5,7 @@
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
+import { toast } from "sonner";
 import {
   Map,
   FileText,
@@ -19,6 +20,7 @@ import {
   Search,
   Menu,
 } from "lucide-react";
+import { statesData } from "@/lib/mockData";
 
 const navItems = [
   { icon: Map, label: "Spending Map", href: "/map" },
@@ -34,7 +36,23 @@ interface DashboardLayoutProps {
 
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [location] = useLocation();
+  const [search, setSearch] = useState("");
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [location, navigate] = useLocation();
+
+  const searchItems = [
+    ...navItems,
+    ...Object.values(statesData).map((state) => ({
+      icon: Map,
+      label: state.name,
+      href: `/state/${state.id}`,
+    })),
+  ];
+  const searchResults = search.trim()
+    ? searchItems
+        .filter((item) => item.label.toLowerCase().includes(search.trim().toLowerCase()))
+        .slice(0, 6)
+    : [];
 
   return (
     <div className="flex h-screen overflow-hidden" style={{ background: "#060B18" }}>
@@ -173,7 +191,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             </button>
             {/* Search bar */}
             <div
-              className="hidden sm:flex items-center gap-2 px-3 py-2 rounded-lg"
+              className="hidden sm:flex items-center gap-2 px-3 py-2 rounded-lg relative"
               style={{
                 background: "rgba(255,255,255,0.05)",
                 border: "1px solid rgba(255,255,255,0.08)",
@@ -184,9 +202,40 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
               <input
                 type="text"
                 placeholder="Search states, projects..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && searchResults[0]) {
+                    navigate(searchResults[0].href);
+                    setSearch("");
+                  }
+                }}
                 className="bg-transparent text-sm outline-none flex-1"
                 style={{ color: "rgba(255,255,255,0.7)", fontFamily: "DM Sans, sans-serif" }}
               />
+              {searchResults.length > 0 && (
+                <div
+                  className="absolute top-11 left-0 right-0 rounded-xl overflow-hidden z-50"
+                  style={{
+                    background: "rgba(10,16,35,0.98)",
+                    border: "1px solid rgba(14,165,233,0.2)",
+                    boxShadow: "0 16px 40px rgba(0,0,0,0.35)",
+                  }}
+                >
+                  {searchResults.map((item) => (
+                    <Link key={item.href} href={item.href}>
+                      <div
+                        className="flex items-center gap-2 px-3 py-2 text-sm cursor-pointer"
+                        style={{ color: "rgba(255,255,255,0.75)" }}
+                        onClick={() => setSearch("")}
+                      >
+                        <item.icon size={14} style={{ color: "#0EA5E9" }} />
+                        {item.label}
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 
@@ -195,6 +244,10 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             <button
               className="relative p-2 rounded-lg transition-all duration-200"
               style={{ color: "rgba(255,255,255,0.5)" }}
+              onClick={() => {
+                setNotificationsOpen((open) => !open);
+                if (!notificationsOpen) toast.info("Showing latest civic updates.");
+              }}
               onMouseEnter={(e) => {
                 (e.currentTarget as HTMLButtonElement).style.background = "rgba(255,255,255,0.06)";
                 (e.currentTarget as HTMLButtonElement).style.color = "rgba(255,255,255,0.9)";
@@ -210,6 +263,30 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 style={{ background: "#0EA5E9" }}
               />
             </button>
+            {notificationsOpen && (
+              <div
+                className="absolute top-14 right-14 w-72 rounded-xl p-3 z-50"
+                style={{
+                  background: "rgba(10,16,35,0.98)",
+                  border: "1px solid rgba(14,165,233,0.2)",
+                  boxShadow: "0 16px 40px rgba(0,0,0,0.35)",
+                }}
+              >
+                {[
+                  "New budget updates added for Selangor.",
+                  "3 citizen reports moved to investigating.",
+                  "Public voting closes soon for active initiatives.",
+                ].map((message) => (
+                  <div
+                    key={message}
+                    className="py-2 text-xs"
+                    style={{ color: "rgba(255,255,255,0.65)", borderBottom: "1px solid rgba(255,255,255,0.06)" }}
+                  >
+                    {message}
+                  </div>
+                ))}
+              </div>
+            )}
 
             {/* Avatar */}
             <div
