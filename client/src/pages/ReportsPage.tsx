@@ -3,7 +3,7 @@
  * Track report status, upvote reports
  * Glassmorphic Civic Premium design
  */
-import { useState } from "react";
+import { useState, type ChangeEvent } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { AlertTriangle, Search, Plus, MapPin, Clock, CheckCircle, Activity, ThumbsUp, Camera, X } from "lucide-react";
 import { citizenReports as initialReports, type CitizenReport } from "@/lib/mockData";
@@ -16,6 +16,33 @@ const CATEGORY_CONFIG: Record<CitizenReport["category"], { label: string; color:
   sanitation: { label: "Sanitation", color: "#22C55E", emoji: "🗑️" },
   flooding: { label: "Flooding", color: "#0EA5E9", emoji: "🌊" },
   other: { label: "Other", color: "#8B5CF6", emoji: "⚠️" },
+};
+
+const REPORT_IMAGE_FALLBACKS: Record<CitizenReport["category"], { url: string; alt: string }> = {
+  pothole: {
+    url: "https://picsum.photos/seed/govlens-pothole/900/600",
+    alt: "Pothole on an asphalt road",
+  },
+  streetlight: {
+    url: "https://picsum.photos/seed/govlens-streetlight/900/600",
+    alt: "Streetlight along a road at night",
+  },
+  road: {
+    url: "https://picsum.photos/seed/govlens-damaged-road/900/600",
+    alt: "Damaged road surface",
+  },
+  sanitation: {
+    url: "https://picsum.photos/seed/govlens-sanitation/900/600",
+    alt: "Uncollected garbage on a street",
+  },
+  flooding: {
+    url: "https://picsum.photos/seed/govlens-flooding/900/600",
+    alt: "Flooded urban street",
+  },
+  other: {
+    url: "https://picsum.photos/seed/govlens-public-safety/900/600",
+    alt: "Public maintenance issue in a city",
+  },
 };
 
 const STATUS_CONFIG: Record<CitizenReport["status"], { label: string; color: string; icon: typeof Clock }> = {
@@ -45,6 +72,8 @@ export default function ReportsPage() {
   const [formCategory, setFormCategory] = useState<CitizenReport["category"] | "">("");
   const [formState, setFormState] = useState("");
   const [formLocation, setFormLocation] = useState("");
+  const [formImageUrl, setFormImageUrl] = useState("");
+  const [formImageName, setFormImageName] = useState("");
 
   const filtered = reports.filter((r) => {
     const matchSearch = r.title.toLowerCase().includes(search.toLowerCase()) || r.state.toLowerCase().includes(search.toLowerCase()) || r.location.toLowerCase().includes(search.toLowerCase());
@@ -63,6 +92,23 @@ export default function ReportsPage() {
     toast.success("Report upvoted! This helps prioritize the issue.");
   };
 
+  const handleImageChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please upload an image file.");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      setFormImageUrl(String(reader.result));
+      setFormImageName(file.name);
+    };
+    reader.readAsDataURL(file);
+  };
+
   const handleSubmitReport = () => {
     if (!formTitle.trim()) { toast.error("Please enter a report title."); return; }
     if (!formDescription.trim()) { toast.error("Please describe the issue."); return; }
@@ -70,6 +116,7 @@ export default function ReportsPage() {
     if (!formState) { toast.error("Please select a state."); return; }
     if (!formLocation.trim()) { toast.error("Please enter the location."); return; }
 
+    const fallbackImage = REPORT_IMAGE_FALLBACKS[formCategory as CitizenReport["category"]];
     const newReport: CitizenReport = {
       id: `rpt-${Date.now()}`,
       title: formTitle.trim(),
@@ -81,6 +128,8 @@ export default function ReportsPage() {
       reportedAt: "Just now",
       reporter: "You",
       upvotes: 0,
+      imageUrl: formImageUrl || fallbackImage.url,
+      imageAlt: formImageName ? `Uploaded report image: ${formImageName}` : fallbackImage.alt,
     };
 
     setReports((prev) => [newReport, ...prev]);
@@ -92,6 +141,8 @@ export default function ReportsPage() {
     setFormCategory("");
     setFormState("");
     setFormLocation("");
+    setFormImageUrl("");
+    setFormImageName("");
     setShowForm(false);
   };
 
@@ -269,13 +320,16 @@ export default function ReportsPage() {
                 </span>
               </div>
 
-              {/* Image placeholder */}
-              <div
-                className="w-full h-24 rounded-xl mb-3 flex items-center justify-center"
-                style={{ background: `${catConf.color}08`, border: `1px dashed ${catConf.color}33` }}
-              >
-                <Camera size={20} style={{ color: `${catConf.color}55` }} />
-              </div>
+              <img
+                src={report.imageUrl}
+                alt={report.imageAlt}
+                className="w-full h-32 rounded-xl mb-3 object-cover"
+                style={{ background: `${catConf.color}08`, border: `1px solid ${catConf.color}22` }}
+                loading="lazy"
+                onError={(e) => {
+                  e.currentTarget.src = REPORT_IMAGE_FALLBACKS[report.category].url;
+                }}
+              />
 
               <h4 className="text-sm font-bold text-white mb-1">{report.title}</h4>
               <p className="text-xs leading-relaxed mb-3" style={{ color: "rgba(255,255,255,0.5)" }}>
@@ -512,6 +566,68 @@ export default function ReportsPage() {
                   </div>
                 </div>
 
+                {/* Photo upload */}
+                <div>
+                  <label className="text-xs font-semibold mb-1.5 block" style={{ color: "rgba(255,255,255,0.6)" }}>
+                    Photo
+                  </label>
+                  <label
+                    className="block rounded-xl cursor-pointer overflow-hidden transition-all duration-200"
+                    style={{
+                      background: "rgba(255,255,255,0.04)",
+                      border: "1px dashed rgba(255,255,255,0.16)",
+                    }}
+                  >
+                    {formImageUrl ? (
+                      <div className="relative">
+                        <img
+                          src={formImageUrl}
+                          alt="Selected report preview"
+                          className="w-full h-40 object-cover"
+                        />
+                        <div
+                          className="absolute inset-x-0 bottom-0 px-3 py-2 text-xs font-semibold"
+                          style={{
+                            background: "linear-gradient(180deg, transparent, rgba(0,0,0,0.75))",
+                            color: "rgba(255,255,255,0.85)",
+                          }}
+                        >
+                          {formImageName || "Selected image"}
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="h-32 flex flex-col items-center justify-center gap-2 text-center px-4">
+                        <Camera size={22} style={{ color: "rgba(255,255,255,0.45)" }} />
+                        <span className="text-sm font-semibold" style={{ color: "rgba(255,255,255,0.72)" }}>
+                          Add a photo
+                        </span>
+                        <span className="text-xs" style={{ color: "rgba(255,255,255,0.42)" }}>
+                          Optional, but helps authorities understand the issue faster.
+                        </span>
+                      </div>
+                    )}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageChange}
+                      className="sr-only"
+                    />
+                  </label>
+                  {formImageUrl && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setFormImageUrl("");
+                        setFormImageName("");
+                      }}
+                      className="mt-2 text-xs font-semibold"
+                      style={{ color: "#EF4444" }}
+                    >
+                      Remove photo
+                    </button>
+                  )}
+                </div>
+
                 {/* Submit button */}
                 <motion.button
                   whileHover={{ scale: 1.02 }}
@@ -567,6 +683,15 @@ export default function ReportsPage() {
                   <X size={16} />
                 </button>
               </div>
+              <img
+                src={selectedReport.imageUrl}
+                alt={selectedReport.imageAlt}
+                className="w-full h-64 rounded-xl object-cover mb-4"
+                style={{ border: "1px solid rgba(255,255,255,0.08)" }}
+                onError={(e) => {
+                  e.currentTarget.src = REPORT_IMAGE_FALLBACKS[selectedReport.category].url;
+                }}
+              />
               <p className="text-sm leading-relaxed" style={{ color: "rgba(255,255,255,0.7)" }}>
                 {selectedReport.description}
               </p>

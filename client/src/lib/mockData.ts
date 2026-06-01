@@ -93,6 +93,8 @@ export interface CitizenReport {
   reportedAt: string;
   reporter: string;
   upvotes: number;
+  imageUrl: string;
+  imageAlt: string;
 }
 
 const COLORS = {
@@ -471,6 +473,8 @@ export const citizenReports: CitizenReport[] = [
     reportedAt: "2025-05-01",
     reporter: "Ahmad Zaki",
     upvotes: 45,
+    imageUrl: "https://picsum.photos/seed/govlens-pothole/900/600",
+    imageAlt: "Large pothole on an asphalt road",
   },
   {
     id: "r2",
@@ -483,6 +487,8 @@ export const citizenReports: CitizenReport[] = [
     reportedAt: "2025-05-03",
     reporter: "Nurul Hana",
     upvotes: 32,
+    imageUrl: "https://picsum.photos/seed/govlens-streetlight/900/600",
+    imageAlt: "Streetlight along a dark road at night",
   },
   {
     id: "r3",
@@ -495,6 +501,8 @@ export const citizenReports: CitizenReport[] = [
     reportedAt: "2025-04-28",
     reporter: "Chen Wei Liang",
     upvotes: 78,
+    imageUrl: "https://picsum.photos/seed/govlens-sanitation/900/600",
+    imageAlt: "Uncollected garbage on a street",
   },
   {
     id: "r4",
@@ -507,6 +515,8 @@ export const citizenReports: CitizenReport[] = [
     reportedAt: "2025-05-05",
     reporter: "Rajendran Pillai",
     upvotes: 56,
+    imageUrl: "https://picsum.photos/seed/govlens-damaged-road/900/600",
+    imageAlt: "Damaged road surface",
   },
   {
     id: "r5",
@@ -519,6 +529,8 @@ export const citizenReports: CitizenReport[] = [
     reportedAt: "2025-05-07",
     reporter: "Faridah Mohd",
     upvotes: 124,
+    imageUrl: "https://picsum.photos/seed/govlens-flooding/900/600",
+    imageAlt: "Flooded urban street",
   },
   {
     id: "r6",
@@ -531,6 +543,8 @@ export const citizenReports: CitizenReport[] = [
     reportedAt: "2025-05-02",
     reporter: "Benedict Lim",
     upvotes: 19,
+    imageUrl: "https://picsum.photos/seed/govlens-fallen-tree/900/600",
+    imageAlt: "Fallen tree blocking a road",
   },
 ];
 
