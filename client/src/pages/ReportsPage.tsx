@@ -323,7 +323,7 @@ export default function ReportsPage() {
               <img
                 src={report.imageUrl}
                 alt={report.imageAlt}
-                className="w-full h-32 rounded-xl mb-3 object-cover"
+                className="w-full h-36 rounded-xl mb-3 object-contain p-1"
                 style={{ background: `${catConf.color}08`, border: `1px solid ${catConf.color}22` }}
                 loading="lazy"
                 onError={(e) => {
@@ -686,8 +686,8 @@ export default function ReportsPage() {
               <img
                 src={selectedReport.imageUrl}
                 alt={selectedReport.imageAlt}
-                className="w-full h-64 rounded-xl object-cover mb-4"
-                style={{ border: "1px solid rgba(255,255,255,0.08)" }}
+                className="w-full max-h-[60vh] rounded-xl object-contain mb-4 p-1"
+                style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}
                 onError={(e) => {
                   e.currentTarget.src = REPORT_IMAGE_FALLBACKS[selectedReport.category].url;
                 }}
