@@ -39,8 +39,36 @@ jobs:
         env:
           GITHUB_PAGES: "true"
 
-      - name: Add SPA fallback
-        run: cp dist/public/index.html dist/public/404.html
+      - name: Add static route fallbacks
+        run: |
+          routes=(
+            map
+            petitions
+            voting
+            forum
+            reports
+            state/perlis
+            state/kedah
+            state/penang
+            state/perak
+            state/selangor
+            state/kuala-lumpur
+            state/putrajaya
+            state/negeri-sembilan
+            state/melaka
+            state/johor
+            state/pahang
+            state/terengganu
+            state/kelantan
+            state/sabah
+            state/labuan
+            state/sarawak
+          )
+          for route in "${routes[@]}"; do
+            mkdir -p "dist/public/$route"
+            cp dist/public/index.html "dist/public/$route/index.html"
+          done
+          cp dist/public/index.html dist/public/404.html
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
