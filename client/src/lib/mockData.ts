@@ -375,7 +375,7 @@ export const forumPosts: ForumPost[] = [
   {
     id: "f1",
     title: "Pengalaman Menggunakan Perkhidmatan Bas RapidKL — Adakah Ia Bertambah Baik?",
-    content: "Saya telah menggunakan bas RapidKL selama 5 tahun. Dalam tempoh setahun ini, saya perasan ada peningkatan dalam frekuensi bas di laluan utama, tetapi kawasan pinggir bandar masih ketinggalan...",
+    content: "Saya telah menggunakan bas RapidKL selama 5 tahun. Dalam tempoh setahun ini, saya perasan ada peningkatan dalam frekuensi bas di laluan utama, tetapi kawasan pinggir bandar masih ketinggalan dari segi jadual, liputan, dan kemudahan hentian. Cadangan saya ialah menambah bas pengantara, memperbaiki paparan masa ketibaan, dan memastikan laluan ke stesen MRT atau LRT lebih mudah dicapai.",
     author: "Khairul Anwar",
     state: "Selangor",
     category: "Transportation",
@@ -389,7 +389,7 @@ export const forumPosts: ForumPost[] = [
   {
     id: "f2",
     title: "Projek MRT3 — Manfaat atau Pembaziran?",
-    content: "Dengan kos yang dijangkakan melebihi RM50 bilion, adakah projek MRT3 benar-benar diperlukan? Saya percaya wang tersebut lebih baik digunakan untuk meningkatkan infrastruktur luar bandar...",
+    content: "Dengan kos yang dijangkakan melebihi RM50 bilion, adakah projek MRT3 benar-benar diperlukan? Saya percaya wang tersebut perlu dinilai dengan teliti supaya manfaatnya seimbang dengan keperluan rakyat di luar bandar. Jika projek diteruskan, kerajaan harus menerbitkan pecahan kos, jadual pelaksanaan, dan sasaran manfaat kepada pengguna secara terbuka.",
     author: "Lim Chee Keong",
     state: "Kuala Lumpur",
     category: "Infrastructure",
@@ -403,7 +403,7 @@ export const forumPosts: ForumPost[] = [
   {
     id: "f3",
     title: "Kualiti Air di Kelantan — Masalah Berterusan",
-    content: "Penduduk Kelantan masih menghadapi masalah bekalan air yang tidak bersih. Walaupun kerajaan telah berjanji untuk menyelesaikan masalah ini, situasi masih tidak berubah...",
+    content: "Penduduk Kelantan masih menghadapi masalah bekalan air yang tidak bersih. Walaupun kerajaan telah berjanji untuk menyelesaikan masalah ini, situasi masih tidak berubah di banyak kawasan perumahan. Keutamaan perlu diberikan kepada penggantian paip lama, loji rawatan air, dan laporan kemajuan bulanan yang boleh dipantau oleh orang awam.",
     author: "Wan Zulaikha",
     state: "Kelantan",
     category: "Utilities",
@@ -417,7 +417,7 @@ export const forumPosts: ForumPost[] = [
   {
     id: "f4",
     title: "Kejayaan Program Pertanian Moden di Kedah",
-    content: "Program pertanian moden yang diperkenalkan di Kedah telah menunjukkan hasil yang menggalakkan. Petani-petani tempatan kini menggunakan teknologi drone dan sistem pengairan pintar...",
+    content: "Program pertanian moden yang diperkenalkan di Kedah telah menunjukkan hasil yang menggalakkan. Petani-petani tempatan kini menggunakan teknologi drone dan sistem pengairan pintar untuk memantau tanaman, mengurangkan pembaziran air, dan meningkatkan hasil padi. Program seperti ini wajar diperluas dengan latihan teknikal dan bantuan penyelenggaraan.",
     author: "Mohd Razif",
     state: "Kedah",
     category: "Agriculture",
@@ -431,7 +431,7 @@ export const forumPosts: ForumPost[] = [
   {
     id: "f5",
     title: "Pelancongan Sarawak — Potensi yang Belum Diterokai Sepenuhnya",
-    content: "Sarawak mempunyai potensi pelancongan yang luar biasa tetapi masih kurang diketengahkan. Hutan hujan tropika, budaya Orang Asal, dan hidupan liar yang unik perlu dipromosikan lebih agresif...",
+    content: "Sarawak mempunyai potensi pelancongan yang luar biasa tetapi masih kurang diketengahkan. Hutan hujan tropika, budaya Orang Asal, dan hidupan liar yang unik perlu dipromosikan lebih agresif melalui kempen digital, infrastruktur mesra pelancong, dan kerjasama dengan komuniti tempatan supaya manfaat ekonomi dapat dikongsi secara adil.",
     author: "Dayang Suraya",
     state: "Sarawak",
     category: "Community",
@@ -445,7 +445,7 @@ export const forumPosts: ForumPost[] = [
   {
     id: "f6",
     title: "Isu Banjir Tahunan di Terengganu — Penyelesaian Jangka Panjang Diperlukan",
-    content: "Setiap tahun Terengganu dilanda banjir yang menyebabkan kerugian besar. Sistem perparitan yang usang dan pembangunan tidak terancang adalah punca utama...",
+    content: "Setiap tahun Terengganu dilanda banjir yang menyebabkan kerugian besar. Sistem perparitan yang usang dan pembangunan tidak terancang adalah punca utama yang perlu ditangani melalui pelan tebatan banjir jangka panjang, penyelenggaraan berkala, dan kawalan pembangunan di kawasan berisiko tinggi.",
     author: "Roslan Hamid",
     state: "Terengganu",
     category: "Infrastructure",
