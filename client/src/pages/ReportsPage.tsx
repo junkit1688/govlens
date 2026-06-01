@@ -20,28 +20,28 @@ const CATEGORY_CONFIG: Record<CitizenReport["category"], { label: string; color:
 
 const REPORT_IMAGE_FALLBACKS: Record<CitizenReport["category"], { url: string; alt: string }> = {
   pothole: {
-    url: "https://picsum.photos/seed/govlens-pothole/900/600",
-    alt: "Pothole on an asphalt road",
+    url: "https://commons.wikimedia.org/wiki/Special:Redirect/file/A_Pothole_in_Broadmoor.jpg",
+    alt: "Close-up photo of a pothole in the road",
   },
   streetlight: {
-    url: "https://picsum.photos/seed/govlens-streetlight/900/600",
-    alt: "Streetlight along a road at night",
+    url: "https://images.unsplash.com/photo-1766198971304-32d71f18745c?auto=format&fit=crop&w=900&q=80",
+    alt: "Dark road at night lit by a single streetlight",
   },
   road: {
-    url: "https://picsum.photos/seed/govlens-damaged-road/900/600",
-    alt: "Damaged road surface",
+    url: "https://commons.wikimedia.org/wiki/Special:Redirect/file/FEMA_-_43256_-_Damaged_road_in_California.jpg",
+    alt: "Damaged road surface with broken asphalt",
   },
   sanitation: {
-    url: "https://picsum.photos/seed/govlens-sanitation/900/600",
-    alt: "Uncollected garbage on a street",
+    url: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Garbage_Street_%2835972464294%29.jpg",
+    alt: "Garbage bags left along a street",
   },
   flooding: {
-    url: "https://picsum.photos/seed/govlens-flooding/900/600",
-    alt: "Flooded urban street",
+    url: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Flooded_street_in_Sacramento_with_stop_sign_and_whirlpool.jpg",
+    alt: "Flooded street with standing water",
   },
   other: {
-    url: "https://picsum.photos/seed/govlens-public-safety/900/600",
-    alt: "Public maintenance issue in a city",
+    url: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Fallen_tree_blocking_the_path%2C_by_the_Esk_-_geograph.org.uk_-_1333466.jpg",
+    alt: "Fallen tree blocking a public path",
   },
 };
 

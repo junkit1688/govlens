@@ -473,8 +473,8 @@ export const citizenReports: CitizenReport[] = [
     reportedAt: "2025-05-01",
     reporter: "Ahmad Zaki",
     upvotes: 45,
-    imageUrl: "https://picsum.photos/seed/govlens-pothole/900/600",
-    imageAlt: "Large pothole on an asphalt road",
+    imageUrl: "https://commons.wikimedia.org/wiki/Special:Redirect/file/A_Pothole_in_Broadmoor.jpg",
+    imageAlt: "Close-up photo of a pothole in the road",
   },
   {
     id: "r2",
@@ -487,8 +487,8 @@ export const citizenReports: CitizenReport[] = [
     reportedAt: "2025-05-03",
     reporter: "Nurul Hana",
     upvotes: 32,
-    imageUrl: "https://picsum.photos/seed/govlens-streetlight/900/600",
-    imageAlt: "Streetlight along a dark road at night",
+    imageUrl: "https://images.unsplash.com/photo-1766198971304-32d71f18745c?auto=format&fit=crop&w=900&q=80",
+    imageAlt: "Dark road at night lit by a single streetlight",
   },
   {
     id: "r3",
@@ -501,8 +501,8 @@ export const citizenReports: CitizenReport[] = [
     reportedAt: "2025-04-28",
     reporter: "Chen Wei Liang",
     upvotes: 78,
-    imageUrl: "https://picsum.photos/seed/govlens-sanitation/900/600",
-    imageAlt: "Uncollected garbage on a street",
+    imageUrl: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Garbage_Street_%2835972464294%29.jpg",
+    imageAlt: "Garbage bags left along a street",
   },
   {
     id: "r4",
@@ -515,8 +515,8 @@ export const citizenReports: CitizenReport[] = [
     reportedAt: "2025-05-05",
     reporter: "Rajendran Pillai",
     upvotes: 56,
-    imageUrl: "https://picsum.photos/seed/govlens-damaged-road/900/600",
-    imageAlt: "Damaged road surface",
+    imageUrl: "https://commons.wikimedia.org/wiki/Special:Redirect/file/FEMA_-_43256_-_Damaged_road_in_California.jpg",
+    imageAlt: "Damaged road surface with broken asphalt",
   },
   {
     id: "r5",
@@ -529,8 +529,8 @@ export const citizenReports: CitizenReport[] = [
     reportedAt: "2025-05-07",
     reporter: "Faridah Mohd",
     upvotes: 124,
-    imageUrl: "https://picsum.photos/seed/govlens-flooding/900/600",
-    imageAlt: "Flooded urban street",
+    imageUrl: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Flooded_street_in_Sacramento_with_stop_sign_and_whirlpool.jpg",
+    imageAlt: "Flooded street with standing water",
   },
   {
     id: "r6",
@@ -543,8 +543,8 @@ export const citizenReports: CitizenReport[] = [
     reportedAt: "2025-05-02",
     reporter: "Benedict Lim",
     upvotes: 19,
-    imageUrl: "https://picsum.photos/seed/govlens-fallen-tree/900/600",
-    imageAlt: "Fallen tree blocking a road",
+    imageUrl: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Fallen_tree_blocking_the_path%2C_by_the_Esk_-_geograph.org.uk_-_1333466.jpg",
+    imageAlt: "Fallen tree blocking a public path",
   },
 ];
 
