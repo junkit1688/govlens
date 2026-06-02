@@ -55,16 +55,18 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     : [];
 
   return (
-    <div className="flex h-screen overflow-hidden" style={{ background: "#060B18" }}>
+    <div className="civic-shell flex h-screen overflow-hidden">
+      <div className="civic-backdrop" />
       {/* Sidebar */}
       <motion.aside
         animate={{ width: sidebarOpen ? 240 : 64 }}
         transition={{ duration: 0.3, ease: "easeInOut" }}
         className="flex-shrink-0 flex flex-col h-full z-30"
         style={{
-          background: "rgba(10, 16, 35, 0.95)",
-          borderRight: "1px solid rgba(255,255,255,0.06)",
-          backdropFilter: "blur(20px)",
+          background: "linear-gradient(180deg, rgba(10,16,35,0.94), rgba(7,12,27,0.9))",
+          borderRight: "1px solid rgba(14,165,233,0.12)",
+          backdropFilter: "blur(24px)",
+          boxShadow: "18px 0 60px rgba(0,0,0,0.24)",
         }}
       >
         {/* Logo */}
@@ -72,9 +74,9 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           <div className="flex items-center gap-3 overflow-hidden">
             <div
               className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
-              style={{
-                background: "linear-gradient(135deg, #0EA5E9, #6366F1)",
-                boxShadow: "0 0 16px rgba(14,165,233,0.4)",
+            style={{
+                background: "linear-gradient(135deg, #0EA5E9, #22C55E 48%, #F59E0B)",
+                boxShadow: "0 0 22px rgba(14,165,233,0.42)",
               }}
             >
               <Eye size={16} className="text-white" />
@@ -171,14 +173,14 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       </motion.aside>
 
       {/* Main area */}
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+      <div className="civic-content flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Top bar */}
         <header
           className="h-16 flex items-center justify-between px-6 flex-shrink-0 z-20"
           style={{
-            background: "rgba(6, 11, 24, 0.8)",
-            borderBottom: "1px solid rgba(255,255,255,0.06)",
-            backdropFilter: "blur(20px)",
+            background: "rgba(6, 11, 24, 0.72)",
+            borderBottom: "1px solid rgba(14,165,233,0.12)",
+            backdropFilter: "blur(22px)",
           }}
         >
           <div className="flex items-center gap-3">
@@ -191,7 +193,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             </button>
             {/* Search bar */}
             <div
-              className="hidden sm:flex items-center gap-2 px-3 py-2 rounded-lg relative"
+              className="surface-lift hidden sm:flex items-center gap-2 px-3 py-2 rounded-lg relative"
               style={{
                 background: "rgba(255,255,255,0.05)",
                 border: "1px solid rgba(255,255,255,0.08)",
@@ -240,6 +242,9 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           </div>
 
           <div className="flex items-center gap-3">
+            <div className="live-chip hidden lg:inline-flex">
+              Live civic feed
+            </div>
             {/* Notification */}
             <button
               className="relative p-2 rounded-lg transition-all duration-200"
@@ -290,9 +295,9 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
             {/* Avatar */}
             <div
-              className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white"
+              className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white animate-pulse-glow"
               style={{
-                background: "linear-gradient(135deg, #0EA5E9, #6366F1)",
+                background: "linear-gradient(135deg, #0EA5E9, #22C55E)",
                 fontFamily: "Syne, sans-serif",
               }}
             >
@@ -305,9 +310,9 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         <main className="flex-1 overflow-y-auto">
           <motion.div
             key={location}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, ease: "easeOut" as const }}
+            initial={{ opacity: 0, y: 14, filter: "blur(8px)" }}
+            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+            transition={{ duration: 0.42, ease: "easeOut" as const }}
             className="h-full"
           >
             {children}

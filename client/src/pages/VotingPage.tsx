@@ -39,7 +39,7 @@ export default function VotingPage() {
   const activeVotes = allVotes.filter((v) => v.status === "active").length;
 
   return (
-    <div className="p-6 space-y-6" style={{ background: "#060B18", minHeight: "100%" }}>
+    <div className="p-6 space-y-6" style={{ minHeight: "100%" }}>
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
