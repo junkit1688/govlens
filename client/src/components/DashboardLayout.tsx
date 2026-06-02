@@ -71,10 +71,11 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       >
         {/* Logo */}
         <div className="flex items-center h-16 px-4 flex-shrink-0" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-          <div className="flex items-center gap-3 overflow-hidden">
+          <Link href="/">
+          <div className="flex items-center gap-3 overflow-hidden cursor-pointer" title="Home">
             <div
               className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
-            style={{
+              style={{
                 background: "linear-gradient(135deg, #0EA5E9, #22C55E 48%, #F59E0B)",
                 boxShadow: "0 0 22px rgba(14,165,233,0.42)",
               }}
@@ -100,6 +101,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
               )}
             </AnimatePresence>
           </div>
+          </Link>
         </div>
 
         {/* Nav */}
