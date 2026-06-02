@@ -148,7 +148,6 @@
     @apply bg-background text-foreground;
     font-family: 'DM Sans', sans-serif;
     background: #060B18;
-    overflow: hidden;
   }
   h1, h2, h3, h4, h5, h6 {
     font-family: 'Syne', sans-serif;
