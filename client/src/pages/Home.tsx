@@ -346,7 +346,7 @@ export default function Home() {
                 </div>
 
                 <div className="relative overflow-hidden rounded-2xl" style={{ background: "rgba(3,7,18,0.62)", border: "1px solid rgba(14,165,233,0.13)" }}>
-                  <svg viewBox="0 0 900 500" className="w-full block" style={{ minHeight: 310 }}>
+                  <svg viewBox="0 0 900 500" className="w-full block" style={{ minHeight: 280 }}>
                     <defs>
                       <radialGradient id="homeMapGlow" cx="50%" cy="50%" r="70%">
                         <stop offset="0%" stopColor="rgba(14,165,233,0.24)" />
@@ -402,29 +402,50 @@ export default function Home() {
                           animate={{ r: [4, 7, 4] }}
                           transition={{ repeat: Infinity, duration: 2.2, delay: i * 0.25 }}
                         />
+                        <circle cx={signal.x} cy={signal.y} r="13" fill="rgba(6,11,24,0.86)" stroke={signal.color} strokeWidth="1.4" />
+                        <text
+                          x={signal.x}
+                          y={signal.y + 4}
+                          textAnchor="middle"
+                          fill="#ffffff"
+                          fontSize="11"
+                          fontFamily="DM Sans, sans-serif"
+                          fontWeight="800"
+                        >
+                          {i + 1}
+                        </text>
                       </g>
                     ))}
                   </svg>
+                </div>
 
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-2 mt-4">
                   {liveSignals.map((signal, i) => (
                     <motion.div
                       key={signal.label}
-                      className="absolute hidden sm:block rounded-xl px-3 py-2"
                       initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: [0, -8, 0] }}
-                      transition={{ opacity: { delay: 0.5 + i * 0.12 }, y: { repeat: Infinity, duration: 4 + i * 0.35, ease: "easeInOut" } }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.45 + i * 0.08 }}
+                      className="rounded-xl px-3 py-2 min-w-0"
                       style={{
-                        left: `${[7, 18, 12, 72, 54][i]}%`,
-                        top: `${[55, 68, 34, 24, 70][i]}%`,
-                        background: "rgba(6,11,24,0.84)",
-                        border: `1px solid ${signal.color}55`,
-                        boxShadow: `0 16px 36px rgba(0,0,0,0.26), 0 0 18px ${signal.color}20`,
-                        backdropFilter: "blur(14px)",
+                        background: "rgba(6,11,24,0.62)",
+                        border: `1px solid ${signal.color}44`,
+                        boxShadow: `0 10px 24px rgba(0,0,0,0.18), 0 0 12px ${signal.color}12`,
                       }}
                     >
-                      <div className="text-[10px] font-semibold uppercase" style={{ color: signal.color }}>{signal.state}</div>
-                      <div className="text-xs text-white mt-0.5">{signal.label}</div>
-                      <div className="text-sm font-bold text-white" style={{ fontFamily: "Syne, sans-serif" }}>{signal.value}</div>
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span
+                          className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-black text-white"
+                          style={{ background: signal.color }}
+                        >
+                          {i + 1}
+                        </span>
+                        <div className="min-w-0">
+                          <div className="truncate text-[10px] font-semibold uppercase" style={{ color: signal.color }}>{signal.state}</div>
+                          <div className="truncate text-xs text-white">{signal.label}</div>
+                        </div>
+                      </div>
+                      <div className="mt-1 text-sm font-bold text-white" style={{ fontFamily: "Syne, sans-serif" }}>{signal.value}</div>
                     </motion.div>
                   ))}
                 </div>
