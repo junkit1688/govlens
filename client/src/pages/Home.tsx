@@ -419,14 +419,14 @@ export default function Home() {
                   </svg>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-2 mt-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 mt-4">
                   {liveSignals.map((signal, i) => (
                     <motion.div
                       key={signal.label}
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.45 + i * 0.08 }}
-                      className="rounded-xl px-3 py-2 min-w-0"
+                      className="rounded-xl px-4 py-3 min-w-0"
                       style={{
                         background: "rgba(6,11,24,0.62)",
                         border: `1px solid ${signal.color}44`,
@@ -441,11 +441,11 @@ export default function Home() {
                           {i + 1}
                         </span>
                         <div className="min-w-0">
-                          <div className="truncate text-[10px] font-semibold uppercase" style={{ color: signal.color }}>{signal.state}</div>
-                          <div className="truncate text-xs text-white">{signal.label}</div>
+                          <div className="text-[11px] font-semibold uppercase leading-snug" style={{ color: signal.color }}>{signal.state}</div>
+                          <div className="text-sm leading-snug text-white">{signal.label}</div>
                         </div>
                       </div>
-                      <div className="mt-1 text-sm font-bold text-white" style={{ fontFamily: "Syne, sans-serif" }}>{signal.value}</div>
+                      <div className="mt-2 text-base font-bold text-white" style={{ fontFamily: "Syne, sans-serif" }}>{signal.value}</div>
                     </motion.div>
                   ))}
                 </div>
