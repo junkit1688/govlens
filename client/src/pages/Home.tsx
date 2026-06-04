@@ -14,15 +14,14 @@ import {
   ArrowRight,
   Shield,
   BarChart3,
-  Users,
   Globe,
   ChevronRight,
-  TrendingUp,
-  CheckCircle,
+  MapPin,
+  Radio,
+  Flag,
+  Activity,
 } from "lucide-react";
-import { nationalStats } from "@/lib/mockData";
-
-const HERO_BG = "https://d2xsxph8kpxj0f.cloudfront.net/310519663646625067/ihHM7ZDmrkLrYL33x6xYVd/govlens-hero-bg-hFCJdLTv6nXD7UEtc9S3hR.webp";
+import { MALAYSIA_STATES } from "@/lib/malaysiaPaths";
 
 const features = [
   {
@@ -84,12 +83,27 @@ const sdgItems = [
   },
 ];
 
-const statsItems = [
-  { label: "Total National Budget", value: `RM${(nationalStats.totalBudget / 1000).toFixed(1)}B`, icon: TrendingUp, color: "#0EA5E9" },
-  { label: "Active Projects", value: nationalStats.activeProjects.toLocaleString(), icon: CheckCircle, color: "#22C55E" },
-  { label: "Citizen Reports", value: nationalStats.citizenReports.toLocaleString(), icon: Users, color: "#6366F1" },
-  { label: "Active Petitions", value: nationalStats.activePetitions.toString(), icon: FileText, color: "#F59E0B" },
+const liveSignals = [
+  { state: "Kuala Lumpur", label: "Pothole report", value: "42 new", x: 104, y: 318, color: "#FACC15" },
+  { state: "Selangor", label: "Transit petition", value: "12.4k signed", x: 89, y: 294, color: "#0EA5E9" },
+  { state: "Penang", label: "Waste vote", value: "10.5k votes", x: 76, y: 213, color: "#EF4444" },
+  { state: "Sabah", label: "Rural roads", value: "RM8.9B", x: 790, y: 137, color: "#22C55E" },
+  { state: "Sarawak", label: "Forest watch", value: "31.2k signed", x: 606, y: 374, color: "#6366F1" },
 ];
+
+const heroActivity = [
+  { icon: Radio, label: "Live reports", value: "28,450", color: "#FACC15" },
+  { icon: Flag, label: "Active petitions", value: "312", color: "#EF4444" },
+  { icon: Activity, label: "State dashboards", value: "16", color: "#0EA5E9" },
+];
+
+const heroStateColors: Record<string, string> = {
+  selangor: "#0EA5E9",
+  "kuala-lumpur": "#FACC15",
+  penang: "#EF4444",
+  sabah: "#22C55E",
+  sarawak: "#6366F1",
+};
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -168,150 +182,264 @@ export default function Home() {
 
       {/* Hero */}
       <section
-        className="relative min-h-screen flex items-center justify-center overflow-hidden"
+        className="relative min-h-screen overflow-hidden"
         style={{
           paddingTop: "4rem",
-          background: "#060B18",
+          background:
+            "radial-gradient(circle at 18% 18%, rgba(14,165,233,0.22), transparent 28%), radial-gradient(circle at 78% 20%, rgba(250,204,21,0.14), transparent 24%), radial-gradient(circle at 80% 82%, rgba(239,68,68,0.13), transparent 30%), #050A16",
         }}
       >
-        {/* Hero background image */}
-        <div
-          className="absolute inset-0"
-          style={{
-            backgroundImage: `url(${HERO_BG})`,
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-            opacity: 0.5,
-          }}
-        />
-        {/* Overlay gradient */}
-        <div
-          className="absolute inset-0"
+        <motion.div
+          aria-hidden="true"
+          className="absolute inset-x-[-10%] top-20 h-24"
+          animate={{ x: ["-4%", "4%", "-4%"] }}
+          transition={{ repeat: Infinity, duration: 13, ease: "easeInOut" }}
           style={{
             background:
-              "radial-gradient(ellipse at 30% 40%, rgba(14,165,233,0.12) 0%, transparent 55%), radial-gradient(ellipse at 70% 60%, rgba(99,102,241,0.12) 0%, transparent 55%), linear-gradient(to bottom, rgba(6,11,24,0.3) 0%, rgba(6,11,24,0.8) 100%)",
+              "linear-gradient(90deg, transparent 0%, rgba(239,68,68,0.24) 18%, rgba(255,255,255,0.10) 42%, rgba(14,165,233,0.22) 62%, rgba(250,204,21,0.24) 82%, transparent 100%)",
+            filter: "blur(26px)",
+            transform: "rotate(-7deg)",
+          }}
+        />
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 opacity-50"
+          style={{
+            backgroundImage:
+              "linear-gradient(rgba(255,255,255,0.045) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.045) 1px, transparent 1px)",
+            backgroundSize: "72px 72px",
+            maskImage: "radial-gradient(circle at center, black 0%, transparent 74%)",
           }}
         />
 
-        <div className="relative z-10 container text-center max-w-5xl mx-auto px-6">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, ease: "easeOut" as const }}
-          >
-            {/* Badge */}
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full mb-6" style={{ background: "rgba(14,165,233,0.12)", border: "1px solid rgba(14,165,233,0.25)" }}>
-              <Globe size={14} style={{ color: "#0EA5E9" }} />
-              <span className="text-xs font-semibold" style={{ color: "#0EA5E9" }}>Malaysia Government Transparency Platform</span>
-            </div>
-
-            <h1
-              className="text-5xl sm:text-6xl md:text-7xl font-extrabold text-white mb-6 leading-tight"
-              style={{ fontFamily: "Syne, sans-serif" }}
+        <div className="relative z-10 container max-w-7xl mx-auto px-6 min-h-screen flex items-center">
+          <div className="grid lg:grid-cols-[0.95fr_1.15fr] gap-10 lg:gap-14 items-center w-full py-16">
+            <motion.div
+              initial={{ opacity: 0, y: 26 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, ease: "easeOut" as const }}
+              className="text-left"
             >
-              See Through{" "}
-              <span
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full mb-6" style={{ background: "rgba(14,165,233,0.12)", border: "1px solid rgba(250,204,21,0.28)" }}>
+                <Globe size={14} style={{ color: "#FACC15" }} />
+                <span className="text-xs font-semibold" style={{ color: "#F8FAFC" }}>Malaysia civic transparency, live on the map</span>
+              </div>
+
+              <motion.h1
+                className="text-5xl sm:text-6xl md:text-7xl font-extrabold text-white leading-[0.95]"
                 style={{
-                  background: "linear-gradient(135deg, #0EA5E9 0%, #6366F1 100%)",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                  backgroundClip: "text",
+                  fontFamily: "Syne, sans-serif",
+                  textShadow: "0 18px 42px rgba(0,0,0,0.45), 0 0 38px rgba(14,165,233,0.18)",
                 }}
+                animate={{ y: [0, -8, 0] }}
+                transition={{ repeat: Infinity, duration: 7, ease: "easeInOut" }}
               >
-                Government
-              </span>
-              <br />
-              Spending
-            </h1>
+                Malaysia's
+                <br />
+                public spending,
+                <br />
+                <span
+                  style={{
+                    background: "linear-gradient(135deg, #FACC15 0%, #FFFFFF 36%, #0EA5E9 70%, #6366F1 100%)",
+                    WebkitBackgroundClip: "text",
+                    WebkitTextFillColor: "transparent",
+                    backgroundClip: "text",
+                  }}
+                >
+                  made visible.
+                </span>
+              </motion.h1>
 
-            <p
-              className="text-lg md:text-xl max-w-2xl mx-auto mb-10 leading-relaxed"
-              style={{ color: "rgba(255,255,255,0.6)" }}
+              <p
+                className="text-base md:text-lg max-w-xl mt-7 mb-8 leading-relaxed"
+                style={{ color: "rgba(255,255,255,0.68)" }}
+              >
+                Follow state budgets, citizen reports, petitions, and public votes in one civic dashboard built around Malaysia.
+              </p>
+
+              <div className="flex flex-col sm:flex-row gap-4">
+                <Link href="/map">
+                  <motion.button
+                    whileHover={{ scale: 1.04, boxShadow: "0 0 40px rgba(14,165,233,0.44)" }}
+                    whileTap={{ scale: 0.97 }}
+                    className="flex items-center justify-center gap-2 px-7 py-4 rounded-xl text-base font-semibold text-white"
+                    style={{
+                      background: "linear-gradient(135deg, #0EA5E9, #2563EB 55%, #6366F1)",
+                      boxShadow: "0 0 24px rgba(14,165,233,0.34)",
+                    }}
+                  >
+                    <Map size={18} />
+                    Explore Malaysia Map
+                    <ArrowRight size={16} />
+                  </motion.button>
+                </Link>
+                <Link href="/reports">
+                  <motion.button
+                    whileHover={{ scale: 1.04 }}
+                    whileTap={{ scale: 0.97 }}
+                    className="flex items-center justify-center gap-2 px-7 py-4 rounded-xl text-base font-semibold"
+                    style={{
+                      background: "rgba(255,255,255,0.07)",
+                      border: "1px solid rgba(250,204,21,0.24)",
+                      color: "rgba(255,255,255,0.9)",
+                      backdropFilter: "blur(12px)",
+                    }}
+                  >
+                    <MapPin size={18} />
+                    View Live Reports
+                  </motion.button>
+                </Link>
+              </div>
+
+              <div className="grid grid-cols-3 gap-3 mt-8 max-w-xl">
+                {heroActivity.map((item, i) => (
+                  <motion.div
+                    key={item.label}
+                    initial={{ opacity: 0, y: 18 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.25 + i * 0.1 }}
+                    className="rounded-xl p-3"
+                    style={{
+                      background: "rgba(255,255,255,0.055)",
+                      border: "1px solid rgba(255,255,255,0.09)",
+                    }}
+                  >
+                    <div className="flex items-center gap-2 mb-2">
+                      <item.icon size={15} style={{ color: item.color }} />
+                      <span className="text-[11px] font-semibold" style={{ color: "rgba(255,255,255,0.52)" }}>{item.label}</span>
+                    </div>
+                    <div className="text-lg font-bold text-white" style={{ fontFamily: "Syne, sans-serif" }}>{item.value}</div>
+                  </motion.div>
+                ))}
+              </div>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, scale: 0.94, rotateX: 8 }}
+              animate={{ opacity: 1, scale: 1, rotateX: 0 }}
+              transition={{ duration: 0.8, delay: 0.15, ease: "easeOut" as const }}
+              className="relative"
+              style={{ perspective: 1000 }}
             >
-              GovLens empowers Malaysian citizens with real-time visibility into public spending,
-              enabling community engagement, transparent governance, and civic participation.
-            </p>
-
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/map">
-                <motion.button
-                  whileHover={{ scale: 1.04, boxShadow: "0 0 40px rgba(14,165,233,0.4)" }}
-                  whileTap={{ scale: 0.97 }}
-                  className="flex items-center gap-2 px-8 py-4 rounded-xl text-base font-semibold text-white"
-                  style={{
-                    background: "linear-gradient(135deg, #0EA5E9, #6366F1)",
-                    boxShadow: "0 0 24px rgba(14,165,233,0.3)",
-                  }}
-                >
-                  <Map size={18} />
-                  Explore Spending Map
-                  <ArrowRight size={16} />
-                </motion.button>
-              </Link>
-              <Link href="/petitions">
-                <motion.button
-                  whileHover={{ scale: 1.04 }}
-                  whileTap={{ scale: 0.97 }}
-                  className="flex items-center gap-2 px-8 py-4 rounded-xl text-base font-semibold"
-                  style={{
-                    background: "rgba(255,255,255,0.06)",
-                    border: "1px solid rgba(255,255,255,0.12)",
-                    color: "rgba(255,255,255,0.85)",
-                    backdropFilter: "blur(12px)",
-                  }}
-                >
-                  <FileText size={18} />
-                  View Petitions
-                </motion.button>
-              </Link>
-            </div>
-          </motion.div>
-
-          {/* Floating stat cards */}
-          <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.3, ease: "easeOut" as const }}
-            className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-4"
-          >
-            {statsItems.map((stat, i) => (
               <motion.div
-                key={stat.label}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4 + i * 0.1 }}
-                className="rounded-xl p-4 text-center"
+                animate={{ y: [0, -12, 0], rotate: [0, 0.4, 0] }}
+                transition={{ repeat: Infinity, duration: 8, ease: "easeInOut" }}
+                className="relative rounded-[2rem] p-4 sm:p-6"
                 style={{
-                  background: "rgba(255,255,255,0.04)",
-                  border: "1px solid rgba(255,255,255,0.08)",
-                  backdropFilter: "blur(16px)",
+                  background: "linear-gradient(145deg, rgba(255,255,255,0.09), rgba(255,255,255,0.025))",
+                  border: "1px solid rgba(255,255,255,0.12)",
+                  boxShadow: "0 30px 90px rgba(0,0,0,0.38), inset 0 1px 0 rgba(255,255,255,0.08)",
+                  transformStyle: "preserve-3d",
                 }}
               >
-                <div
-                  className="w-8 h-8 rounded-lg flex items-center justify-center mx-auto mb-2"
-                  style={{ background: `${stat.color}22` }}
-                >
-                  <stat.icon size={16} style={{ color: stat.color }} />
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <div className="text-xs font-semibold uppercase tracking-[0.18em]" style={{ color: "#FACC15" }}>Live civic map</div>
+                    <h2 className="text-xl sm:text-2xl font-bold text-white mt-1" style={{ fontFamily: "Syne, sans-serif" }}>
+                      Malaysia activity layer
+                    </h2>
+                  </div>
+                  <div className="flex items-center gap-2 rounded-full px-3 py-1.5" style={{ background: "rgba(34,197,94,0.12)", border: "1px solid rgba(34,197,94,0.24)" }}>
+                    <span className="w-2 h-2 rounded-full" style={{ background: "#22C55E", boxShadow: "0 0 12px #22C55E" }} />
+                    <span className="text-xs font-semibold" style={{ color: "#BBF7D0" }}>updating</span>
+                  </div>
                 </div>
-                <div className="text-xl font-bold text-white" style={{ fontFamily: "Syne, sans-serif" }}>
-                  {stat.value}
-                </div>
-                <div className="text-xs mt-1" style={{ color: "rgba(255,255,255,0.4)" }}>
-                  {stat.label}
+
+                <div className="relative overflow-hidden rounded-2xl" style={{ background: "rgba(3,7,18,0.62)", border: "1px solid rgba(14,165,233,0.13)" }}>
+                  <svg viewBox="0 0 900 500" className="w-full block" style={{ minHeight: 310 }}>
+                    <defs>
+                      <radialGradient id="homeMapGlow" cx="50%" cy="50%" r="70%">
+                        <stop offset="0%" stopColor="rgba(14,165,233,0.24)" />
+                        <stop offset="100%" stopColor="rgba(14,165,233,0)" />
+                      </radialGradient>
+                      <filter id="homePinGlow">
+                        <feGaussianBlur stdDeviation="6" result="blur" />
+                        <feMerge>
+                          <feMergeNode in="blur" />
+                          <feMergeNode in="SourceGraphic" />
+                        </feMerge>
+                      </filter>
+                    </defs>
+                    <rect width="900" height="500" fill="url(#homeMapGlow)" opacity="0.65" />
+                    <path d="M82 314 C230 150, 455 166, 636 340 S826 286, 862 124" fill="none" stroke="rgba(250,204,21,0.22)" strokeWidth="2" strokeDasharray="10 16" />
+                    <path d="M92 284 C260 390, 408 420, 604 374 S728 220, 792 137" fill="none" stroke="rgba(239,68,68,0.18)" strokeWidth="2" strokeDasharray="4 14" />
+
+                    {MALAYSIA_STATES.map((state, i) => {
+                      const color = heroStateColors[state.id] || "#0EA5E9";
+                      const highlighted = Boolean(heroStateColors[state.id]);
+                      return (
+                        <motion.path
+                          key={state.id}
+                          d={state.path}
+                          fill={highlighted ? `${color}72` : "rgba(14,165,233,0.18)"}
+                          stroke={highlighted ? color : "rgba(148,163,184,0.35)"}
+                          strokeWidth={highlighted ? 1.3 : 0.7}
+                          animate={{
+                            opacity: highlighted ? [0.78, 1, 0.78] : 0.42,
+                          }}
+                          transition={{ repeat: Infinity, duration: 3.2 + (i % 4) * 0.35, delay: i * 0.04 }}
+                        />
+                      );
+                    })}
+
+                    {liveSignals.map((signal, i) => (
+                      <g key={signal.state}>
+                        <motion.circle
+                          cx={signal.x}
+                          cy={signal.y}
+                          r="18"
+                          fill={signal.color}
+                          opacity="0.15"
+                          filter="url(#homePinGlow)"
+                          animate={{ scale: [0.6, 1.7, 0.6], opacity: [0.2, 0, 0.2] }}
+                          transition={{ repeat: Infinity, duration: 2.7, delay: i * 0.34 }}
+                        />
+                        <motion.circle
+                          cx={signal.x}
+                          cy={signal.y}
+                          r="5"
+                          fill={signal.color}
+                          animate={{ r: [4, 7, 4] }}
+                          transition={{ repeat: Infinity, duration: 2.2, delay: i * 0.25 }}
+                        />
+                      </g>
+                    ))}
+                  </svg>
+
+                  {liveSignals.map((signal, i) => (
+                    <motion.div
+                      key={signal.label}
+                      className="absolute hidden sm:block rounded-xl px-3 py-2"
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: [0, -8, 0] }}
+                      transition={{ opacity: { delay: 0.5 + i * 0.12 }, y: { repeat: Infinity, duration: 4 + i * 0.35, ease: "easeInOut" } }}
+                      style={{
+                        left: `${[7, 18, 12, 72, 54][i]}%`,
+                        top: `${[55, 68, 34, 24, 70][i]}%`,
+                        background: "rgba(6,11,24,0.84)",
+                        border: `1px solid ${signal.color}55`,
+                        boxShadow: `0 16px 36px rgba(0,0,0,0.26), 0 0 18px ${signal.color}20`,
+                        backdropFilter: "blur(14px)",
+                      }}
+                    >
+                      <div className="text-[10px] font-semibold uppercase" style={{ color: signal.color }}>{signal.state}</div>
+                      <div className="text-xs text-white mt-0.5">{signal.label}</div>
+                      <div className="text-sm font-bold text-white" style={{ fontFamily: "Syne, sans-serif" }}>{signal.value}</div>
+                    </motion.div>
+                  ))}
                 </div>
               </motion.div>
-            ))}
-          </motion.div>
+            </motion.div>
+          </div>
         </div>
 
-        {/* Scroll indicator */}
         <motion.div
           className="absolute bottom-8 left-1/2 -translate-x-1/2"
           animate={{ y: [0, 8, 0] }}
           transition={{ repeat: Infinity, duration: 2 }}
         >
-          <div className="w-6 h-10 rounded-full border-2 flex items-start justify-center pt-2" style={{ borderColor: "rgba(255,255,255,0.2)" }}>
-            <div className="w-1 h-2 rounded-full" style={{ background: "#0EA5E9" }} />
+          <div className="w-6 h-10 rounded-full border-2 flex items-start justify-center pt-2" style={{ borderColor: "rgba(255,255,255,0.22)" }}>
+            <div className="w-1 h-2 rounded-full" style={{ background: "#FACC15" }} />
           </div>
         </motion.div>
       </section>
