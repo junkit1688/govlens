@@ -84,11 +84,11 @@ const sdgItems = [
 ];
 
 const liveSignals = [
-  { state: "Kuala Lumpur", label: "Pothole report", value: "42 new", x: 104, y: 318, color: "#FACC15" },
-  { state: "Selangor", label: "Transit petition", value: "12.4k signed", x: 89, y: 294, color: "#0EA5E9" },
-  { state: "Penang", label: "Waste vote", value: "10.5k votes", x: 76, y: 213, color: "#EF4444" },
-  { state: "Sabah", label: "Rural roads", value: "RM8.9B", x: 790, y: 137, color: "#22C55E" },
-  { state: "Sarawak", label: "Forest watch", value: "31.2k signed", x: 606, y: 374, color: "#6366F1" },
+  { state: "Kuala Lumpur", label: "Pothole reports", value: "12 open cases", x: 104, y: 318, color: "#FACC15" },
+  { state: "Selangor", label: "Bus frequency petition", value: "4,820 signatures", x: 89, y: 294, color: "#0EA5E9" },
+  { state: "Penang", label: "Waste collection vote", value: "2,450 votes", x: 76, y: 213, color: "#EF4444" },
+  { state: "Sabah", label: "Rural road repairs", value: "18 reports reviewed", x: 790, y: 137, color: "#22C55E" },
+  { state: "Sarawak", label: "Illegal logging petition", value: "6,300 signatures", x: 606, y: 374, color: "#6366F1" },
 ];
 
 const heroActivity = [
