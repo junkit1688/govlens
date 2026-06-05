@@ -19,8 +19,11 @@ import {
   Bell,
   Search,
   Menu,
+  UserRound,
+  LogOut,
 } from "lucide-react";
 import { statesData } from "@/lib/mockData";
+import { useAuth } from "@/contexts/AuthContext";
 
 const navItems = [
   { icon: Map, label: "Spending Map", href: "/map" },
@@ -39,6 +42,10 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const [search, setSearch] = useState("");
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [location, navigate] = useLocation();
+  const { user, logout } = useAuth();
+  const userInitials = user
+    ? user.name.split(" ").map((part) => part[0]).join("").slice(0, 2).toUpperCase()
+    : "";
 
   const searchItems = [
     ...navItems,
@@ -152,6 +159,29 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
               </div>
             </Link>
           ))}
+
+          <div className="my-2" style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }} />
+
+          <Link href={user ? "/account" : "/login"}>
+            <div
+              className={`nav-item ${location === "/account" || location === "/login" ? "active" : ""}`}
+              title={user ? "My Account" : "Sign in"}
+            >
+              <UserRound size={18} className="flex-shrink-0" />
+              <AnimatePresence>
+                {sidebarOpen && (
+                  <motion.span
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="whitespace-nowrap overflow-hidden"
+                  >
+                    {user ? "My Account" : "Sign in"}
+                  </motion.span>
+                )}
+              </AnimatePresence>
+            </div>
+          </Link>
         </nav>
 
         {/* Collapse toggle */}
@@ -295,16 +325,42 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
               </div>
             )}
 
-            {/* Avatar */}
-            <div
-              className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white animate-pulse-glow"
-              style={{
-                background: "linear-gradient(135deg, #0EA5E9, #22C55E)",
-                fontFamily: "Syne, sans-serif",
-              }}
-            >
-              R
-            </div>
+            {user ? (
+              <div className="flex items-center gap-2">
+                <Link href="/account">
+                  <div
+                    className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white animate-pulse-glow"
+                    title={user.name}
+                    style={{
+                      background: "linear-gradient(135deg, #0EA5E9, #22C55E)",
+                      fontFamily: "Syne, sans-serif",
+                    }}
+                  >
+                    {userInitials}
+                  </div>
+                </Link>
+                <button
+                  onClick={() => {
+                    logout();
+                    toast.success("Signed out.");
+                    navigate("/");
+                  }}
+                  className="hidden sm:flex items-center gap-1 px-3 py-2 rounded-lg text-xs font-semibold"
+                  style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.62)" }}
+                >
+                  <LogOut size={13} /> Sign out
+                </button>
+              </div>
+            ) : (
+              <Link href="/login">
+                <button
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-white"
+                  style={{ background: "linear-gradient(135deg, #0EA5E9, #6366F1)", boxShadow: "0 0 18px rgba(14,165,233,0.22)" }}
+                >
+                  <UserRound size={15} /> Sign in
+                </button>
+              </Link>
+            )}
           </div>
         </header>
 

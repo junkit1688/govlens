@@ -4,9 +4,11 @@
  */
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useLocation } from "wouter";
 import { FileText, Search, Filter, TrendingUp, Users, CheckCircle, Plus, MapPin, Tag, X } from "lucide-react";
 import { petitions as initialPetitions, type Petition } from "@/lib/mockData";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
 
 const STATUS_CONFIG = {
   active: { label: "Active", color: "#0EA5E9" },
@@ -26,6 +28,8 @@ const CATEGORIES = [
 ];
 
 export default function PetitionsPage() {
+  const { user } = useAuth();
+  const [, navigate] = useLocation();
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<"all" | "active" | "won" | "closed">("all");
   const [signed, setSigned] = useState<Set<string>>(new Set());
@@ -60,6 +64,7 @@ export default function PetitionsPage() {
   };
 
   const handleSubmitPetition = () => {
+    if (!user) { toast.info("Please sign in to create a petition."); navigate("/login"); return; }
     if (!formTitle.trim()) { toast.error("Please enter a petition title."); return; }
     if (!formDescription.trim()) { toast.error("Please enter a description."); return; }
     if (!formState) { toast.error("Please select a state."); return; }
@@ -75,7 +80,7 @@ export default function PetitionsPage() {
       target: parseInt(formTarget) || 1000,
       status: "active",
       createdAt: new Date().toLocaleDateString("en-MY", { year: "numeric", month: "short", day: "numeric" }),
-      author: "You",
+      author: user.name,
       tags: formTags.split(",").map((t) => t.trim()).filter(Boolean),
     };
 
@@ -113,7 +118,10 @@ export default function PetitionsPage() {
         <motion.button
           whileHover={{ scale: 1.04 }}
           whileTap={{ scale: 0.97 }}
-          onClick={() => setShowForm(true)}
+          onClick={() => {
+            if (!user) { toast.info("Please sign in to create a petition."); navigate("/login"); return; }
+            setShowForm(true);
+          }}
           className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-white"
           style={{
             background: "linear-gradient(135deg, #0EA5E9, #6366F1)",

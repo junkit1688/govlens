@@ -4,9 +4,11 @@
  */
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useLocation } from "wouter";
 import { MessageSquare, Search, TrendingUp, Heart, Eye, Reply, MapPin, Tag, Flame, Plus, X } from "lucide-react";
 import { forumPosts as initialPosts, type ForumPost } from "@/lib/mockData";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
 
 const CATEGORIES = ["All", "Transportation", "Infrastructure", "Healthcare", "Environment", "Agriculture", "Community", "Utilities"];
 
@@ -17,6 +19,8 @@ const STATES = [
 ];
 
 export default function ForumPage() {
+  const { user } = useAuth();
+  const [, navigate] = useLocation();
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All");
   const [liked, setLiked] = useState<Set<string>>(new Set());
@@ -55,6 +59,7 @@ export default function ForumPage() {
   };
 
   const handleSubmitPost = () => {
+    if (!user) { toast.info("Please sign in to publish a forum post."); navigate("/login"); return; }
     if (!formTitle.trim()) { toast.error("Please enter a post title."); return; }
     if (!formContent.trim()) { toast.error("Please enter post content."); return; }
     if (!formState) { toast.error("Please select a state."); return; }
@@ -64,7 +69,7 @@ export default function ForumPage() {
       id: `post-${Date.now()}`,
       title: formTitle.trim(),
       content: formContent.trim(),
-      author: "You",
+      author: user.name,
       state: formState,
       category: formCategory,
       likes: 0,
@@ -107,7 +112,10 @@ export default function ForumPage() {
         <motion.button
           whileHover={{ scale: 1.04 }}
           whileTap={{ scale: 0.97 }}
-          onClick={() => setShowForm(true)}
+          onClick={() => {
+            if (!user) { toast.info("Please sign in to publish a forum post."); navigate("/login"); return; }
+            setShowForm(true);
+          }}
           className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-white"
           style={{
             background: "linear-gradient(135deg, #0EA5E9, #6366F1)",

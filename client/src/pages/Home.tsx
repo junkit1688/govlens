@@ -22,6 +22,7 @@ import {
   Activity,
 } from "lucide-react";
 import { MALAYSIA_STATES } from "@/lib/malaysiaPaths";
+import { useAuth } from "@/contexts/AuthContext";
 
 const features = [
   {
@@ -119,6 +120,8 @@ const itemVariants = {
 };
 
 export default function Home() {
+  const { user } = useAuth();
+
   return (
     <div className="min-h-screen" style={{ background: "#060B18", fontFamily: "DM Sans, sans-serif" }}>
       {/* Navigation */}
@@ -165,7 +168,7 @@ export default function Home() {
           ))}
         </div>
 
-        <Link href="/map">
+        <Link href={user ? "/account" : "/login"}>
           <motion.button
             whileHover={{ scale: 1.04 }}
             whileTap={{ scale: 0.97 }}
@@ -175,7 +178,7 @@ export default function Home() {
               boxShadow: "0 0 20px rgba(14,165,233,0.3)",
             }}
           >
-            Explore Map <ArrowRight size={14} />
+            {user ? `Hi, ${user.name.split(" ")[0]}` : "Sign in"} <ArrowRight size={14} />
           </motion.button>
         </Link>
       </nav>

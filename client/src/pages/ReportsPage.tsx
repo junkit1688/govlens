@@ -5,9 +5,11 @@
  */
 import { useState, type ChangeEvent } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useLocation } from "wouter";
 import { AlertTriangle, Search, Plus, MapPin, Clock, CheckCircle, Activity, ThumbsUp, Camera, X } from "lucide-react";
 import { citizenReports as initialReports, type CitizenReport } from "@/lib/mockData";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
 
 const CATEGORY_CONFIG: Record<CitizenReport["category"], { label: string; color: string; emoji: string }> = {
   pothole: { label: "Pothole", color: "#EF4444", emoji: "🕳️" },
@@ -58,6 +60,8 @@ const STATES = [
 ];
 
 export default function ReportsPage() {
+  const { user } = useAuth();
+  const [, navigate] = useLocation();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | CitizenReport["status"]>("all");
   const [catFilter, setCatFilter] = useState<"all" | CitizenReport["category"]>("all");
@@ -110,6 +114,7 @@ export default function ReportsPage() {
   };
 
   const handleSubmitReport = () => {
+    if (!user) { toast.info("Please sign in to submit a report."); navigate("/login"); return; }
     if (!formTitle.trim()) { toast.error("Please enter a report title."); return; }
     if (!formDescription.trim()) { toast.error("Please describe the issue."); return; }
     if (!formCategory) { toast.error("Please select a category."); return; }
@@ -126,7 +131,7 @@ export default function ReportsPage() {
       location: formLocation.trim(),
       status: "pending",
       reportedAt: "Just now",
-      reporter: "You",
+      reporter: user.name,
       upvotes: 0,
       imageUrl: formImageUrl || fallbackImage.url,
       imageAlt: formImageName ? `Uploaded report image: ${formImageName}` : fallbackImage.alt,
@@ -170,7 +175,10 @@ export default function ReportsPage() {
         <motion.button
           whileHover={{ scale: 1.04 }}
           whileTap={{ scale: 0.97 }}
-          onClick={() => setShowForm(true)}
+          onClick={() => {
+            if (!user) { toast.info("Please sign in to submit a report."); navigate("/login"); return; }
+            setShowForm(true);
+          }}
           className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-white"
           style={{
             background: "linear-gradient(135deg, #EF4444, #F97316)",
@@ -405,7 +413,10 @@ export default function ReportsPage() {
         <motion.button
           whileHover={{ scale: 1.04 }}
           whileTap={{ scale: 0.97 }}
-          onClick={() => setShowForm(true)}
+          onClick={() => {
+            if (!user) { toast.info("Please sign in to submit a report."); navigate("/login"); return; }
+            setShowForm(true);
+          }}
           className="px-5 py-2.5 rounded-xl text-sm font-semibold text-white flex-shrink-0"
           style={{
             background: "linear-gradient(135deg, #EF4444, #F97316)",
