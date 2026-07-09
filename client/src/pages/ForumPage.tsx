@@ -96,6 +96,7 @@ export default function ForumPage() {
     try {
       const savedPost = await createForumPost({
         userId: user.id,
+        authorName: user.name,
         title: localPost.title,
         content: localPost.content,
         state: localPost.state,

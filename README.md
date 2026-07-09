@@ -63,6 +63,8 @@ For the easiest classroom demo flow, open Supabase `Authentication` -> `Sign In 
 
 GovLens also includes a `demo_accounts` table for classroom login demos. It lets an account created in one browser be used from another browser without waiting for Supabase Auth email confirmation. Run `supabase/schema.sql` again if this table is missing.
 
+For shared classroom demo content, also run `supabase/demo-civic-data.sql`. It creates public demo tables for reports, petitions, petition signatures, forum posts, and votes so data submitted by one browser appears for other users.
+
 ### GitHub Login Through Supabase
 
 GitHub login needs dashboard setup because the GitHub Client Secret must never be committed to this repo.

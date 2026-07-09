@@ -153,6 +153,7 @@ export default function ReportsPage() {
     try {
       const savedReport = await createReport({
         userId: user.id,
+        authorName: user.name,
         title: localReport.title,
         description: localReport.description,
         category: localReport.category,

@@ -3,6 +3,7 @@ import { requireSupabase, supabase } from "@/lib/supabaseClient";
 
 type CreateReportInput = {
   userId: string;
+  authorName: string;
   title: string;
   description: string;
   category: CitizenReport["category"];
@@ -13,6 +14,7 @@ type CreateReportInput = {
 
 type CreatePetitionInput = {
   userId: string;
+  authorName: string;
   title: string;
   description: string;
   state: string;
@@ -23,6 +25,7 @@ type CreatePetitionInput = {
 
 type CreateForumPostInput = {
   userId: string;
+  authorName: string;
   title: string;
   content: string;
   state: string;
@@ -50,8 +53,8 @@ export async function fetchReports(): Promise<CitizenReport[]> {
   if (!supabase) return [];
 
   const { data, error } = await supabase
-    .from("reports")
-    .select("id,title,description,category,state,location_text,status,image_url,created_at,profiles(name)")
+    .from("demo_reports")
+    .select("id,title,description,category,state,location_text,status,image_url,author_name,created_at")
     .order("created_at", { ascending: false });
 
   if (error) throw error;
@@ -65,7 +68,7 @@ export async function fetchReports(): Promise<CitizenReport[]> {
     location: row.location_text,
     status: mapReportStatus(row.status),
     reportedAt: formatDate(row.created_at),
-    reporter: getProfileName(row.profiles),
+    reporter: row.author_name || "GovLens user",
     upvotes: 0,
     imageUrl: row.image_url || "",
     imageAlt: row.image_url ? `Report image for ${row.title}` : "Citizen report image",
@@ -75,9 +78,10 @@ export async function fetchReports(): Promise<CitizenReport[]> {
 export async function createReport(input: CreateReportInput): Promise<CitizenReport> {
   const client = requireSupabase();
   const { data, error } = await client
-    .from("reports")
+    .from("demo_reports")
     .insert({
       user_id: input.userId,
+      author_name: input.authorName,
       title: input.title,
       description: input.description,
       category: input.category,
@@ -86,7 +90,7 @@ export async function createReport(input: CreateReportInput): Promise<CitizenRep
       image_url: input.imageUrl || null,
       status: "submitted",
     })
-    .select("id,title,description,category,state,location_text,status,image_url,created_at,profiles(name)")
+    .select("id,title,description,category,state,location_text,status,image_url,author_name,created_at")
     .single();
 
   if (error) throw error;
@@ -100,7 +104,7 @@ export async function createReport(input: CreateReportInput): Promise<CitizenRep
     location: data.location_text,
     status: mapReportStatus(data.status),
     reportedAt: formatDate(data.created_at),
-    reporter: getProfileName(data.profiles),
+    reporter: data.author_name || "GovLens user",
     upvotes: 0,
     imageUrl: data.image_url || "",
     imageAlt: data.image_url ? `Report image for ${data.title}` : "Citizen report image",
@@ -111,8 +115,8 @@ export async function fetchPetitions(): Promise<Petition[]> {
   if (!supabase) return [];
 
   const { data, error } = await supabase
-    .from("petitions")
-    .select("id,title,description,state,category,target,signature_count,status,tags,created_at,profiles(name)")
+    .from("demo_petitions")
+    .select("id,title,description,state,category,target,signature_count,status,tags,author_name,created_at")
     .order("created_at", { ascending: false });
 
   if (error) throw error;
@@ -127,7 +131,7 @@ export async function fetchPetitions(): Promise<Petition[]> {
     target: row.target || 1000,
     status: row.status || "active",
     createdAt: formatDate(row.created_at),
-    author: getProfileName(row.profiles),
+    author: row.author_name || "GovLens user",
     tags: row.tags || [],
   }));
 }
@@ -135,9 +139,10 @@ export async function fetchPetitions(): Promise<Petition[]> {
 export async function createPetition(input: CreatePetitionInput): Promise<Petition> {
   const client = requireSupabase();
   const { data, error } = await client
-    .from("petitions")
+    .from("demo_petitions")
     .insert({
       user_id: input.userId,
+      author_name: input.authorName,
       title: input.title,
       description: input.description,
       state: input.state,
@@ -147,7 +152,7 @@ export async function createPetition(input: CreatePetitionInput): Promise<Petiti
       status: "active",
       tags: input.tags,
     })
-    .select("id,title,description,state,category,target,signature_count,status,tags,created_at,profiles(name)")
+    .select("id,title,description,state,category,target,signature_count,status,tags,author_name,created_at")
     .single();
 
   if (error) throw error;
@@ -164,14 +169,14 @@ export async function createPetition(input: CreatePetitionInput): Promise<Petiti
     target: data.target || 1000,
     status: data.status || "active",
     createdAt: formatDate(data.created_at),
-    author: getProfileName(data.profiles),
+    author: data.author_name || "GovLens user",
     tags: data.tags || [],
   };
 }
 
 export async function signPetition(petitionId: string, userId: string) {
   const client = requireSupabase();
-  const { error } = await client.from("petition_signatures").insert({
+  const { error } = await client.from("demo_petition_signatures").insert({
     petition_id: petitionId,
     user_id: userId,
   });
@@ -183,8 +188,8 @@ export async function fetchForumPosts(): Promise<ForumPost[]> {
   if (!supabase) return [];
 
   const { data, error } = await supabase
-    .from("forum_posts")
-    .select("id,title,content,state,category,tags,likes,replies,views,trending,created_at,profiles(name)")
+    .from("demo_forum_posts")
+    .select("id,title,content,state,category,tags,likes,replies,views,trending,author_name,created_at")
     .order("created_at", { ascending: false });
 
   if (error) throw error;
@@ -193,7 +198,7 @@ export async function fetchForumPosts(): Promise<ForumPost[]> {
     id: row.id,
     title: row.title,
     content: row.content,
-    author: getProfileName(row.profiles),
+    author: row.author_name || "GovLens user",
     state: row.state,
     category: row.category,
     likes: row.likes || 0,
@@ -208,16 +213,17 @@ export async function fetchForumPosts(): Promise<ForumPost[]> {
 export async function createForumPost(input: CreateForumPostInput): Promise<ForumPost> {
   const client = requireSupabase();
   const { data, error } = await client
-    .from("forum_posts")
+    .from("demo_forum_posts")
     .insert({
       user_id: input.userId,
+      author_name: input.authorName,
       title: input.title,
       content: input.content,
       state: input.state,
       category: input.category,
       tags: input.tags,
     })
-    .select("id,title,content,state,category,tags,likes,replies,views,trending,created_at,profiles(name)")
+    .select("id,title,content,state,category,tags,likes,replies,views,trending,author_name,created_at")
     .single();
 
   if (error) throw error;
@@ -226,7 +232,7 @@ export async function createForumPost(input: CreateForumPostInput): Promise<Foru
     id: data.id,
     title: data.title,
     content: data.content,
-    author: getProfileName(data.profiles),
+    author: data.author_name || "GovLens user",
     state: data.state,
     category: data.category,
     likes: data.likes || 0,
@@ -240,7 +246,7 @@ export async function createForumPost(input: CreateForumPostInput): Promise<Foru
 
 export async function castVote(input: CastVoteInput) {
   const client = requireSupabase();
-  const { error } = await client.from("votes").insert({
+  const { error } = await client.from("demo_votes").insert({
     user_id: input.userId,
     policy_id: input.policyId,
     policy_title: input.policyTitle,

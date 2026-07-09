@@ -111,6 +111,7 @@ export default function PetitionsPage() {
     try {
       const savedPetition = await createPetition({
         userId: user.id,
+        authorName: user.name,
         title: localPetition.title,
         description: localPetition.description,
         state: localPetition.state,
