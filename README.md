@@ -61,6 +61,8 @@ The app uses Supabase Auth when these variables are present. If they are missing
 
 For the easiest classroom demo flow, open Supabase `Authentication` -> `Sign In / Providers` -> `Email` and turn off email confirmation. If email confirmation stays on, newly created users are saved in Supabase but must confirm their email before they can log in again.
 
+GovLens also includes a `demo_accounts` table for classroom login demos. It lets an account created in one browser be used from another browser without waiting for Supabase Auth email confirmation. Run `supabase/schema.sql` again if this table is missing.
+
 ### GitHub Login Through Supabase
 
 GitHub login needs dashboard setup because the GitHub Client Secret must never be committed to this repo.

@@ -11,6 +11,15 @@ create table if not exists public.profiles (
   updated_at timestamptz not null default now()
 );
 
+create table if not exists public.demo_accounts (
+  id uuid primary key default gen_random_uuid(),
+  name text not null,
+  email text not null unique,
+  password_hash text not null,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
 create table if not exists public.reports (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references public.profiles(id) on delete cascade,
@@ -131,6 +140,10 @@ drop trigger if exists set_profiles_updated_at on public.profiles;
 create trigger set_profiles_updated_at before update on public.profiles
   for each row execute procedure public.set_updated_at();
 
+drop trigger if exists set_demo_accounts_updated_at on public.demo_accounts;
+create trigger set_demo_accounts_updated_at before update on public.demo_accounts
+  for each row execute procedure public.set_updated_at();
+
 drop trigger if exists set_reports_updated_at on public.reports;
 create trigger set_reports_updated_at before update on public.reports
   for each row execute procedure public.set_updated_at();
@@ -171,6 +184,7 @@ create trigger increment_petition_signature_count
   for each row execute procedure public.increment_petition_signature_count();
 
 alter table public.profiles enable row level security;
+alter table public.demo_accounts enable row level security;
 alter table public.reports enable row level security;
 alter table public.petitions enable row level security;
 alter table public.petition_signatures enable row level security;
@@ -181,6 +195,10 @@ alter table public.notifications enable row level security;
 
 create policy "Profiles are readable" on public.profiles for select using (true);
 create policy "Users update own profile" on public.profiles for update using (auth.uid() = id);
+
+create policy "Demo accounts are readable" on public.demo_accounts for select using (true);
+create policy "Demo accounts can be created" on public.demo_accounts for insert with check (true);
+create policy "Demo accounts can be updated" on public.demo_accounts for update using (true);
 
 create policy "Reports are readable" on public.reports for select using (true);
 create policy "Users create own reports" on public.reports for insert with check (auth.uid() = user_id);

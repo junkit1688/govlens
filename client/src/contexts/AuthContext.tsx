@@ -31,6 +31,7 @@ interface AuthContextValue {
 
 const ACCOUNTS_KEY = "govlens.accounts";
 const SESSION_KEY = "govlens.session";
+const DEMO_ACCOUNTS_TABLE = "demo_accounts";
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
@@ -91,6 +92,78 @@ async function findDemoAccount(email: string, password: string) {
   return account.passwordHash === passwordHash ? account : null;
 }
 
+function storeDemoSession(account: StoredAccount) {
+  localStorage.setItem(SESSION_KEY, account.id);
+  setStoredDemoAccount(account);
+}
+
+function setStoredDemoAccount(account: StoredAccount) {
+  const accounts = readAccounts();
+  const existingIndex = accounts.findIndex((item) => item.email === account.email);
+  const nextAccounts = existingIndex >= 0
+    ? accounts.map((item, index) => index === existingIndex ? account : item)
+    : [account, ...accounts];
+
+  writeAccounts(nextAccounts);
+}
+
+async function saveRemoteDemoAccount(name: string, email: string, password: string) {
+  if (!supabase) return null;
+
+  const normalizedEmail = email.trim().toLowerCase();
+  const passwordHash = await hashPassword(password);
+  const { data, error } = await supabase
+    .from(DEMO_ACCOUNTS_TABLE)
+    .upsert({
+      name: name.trim(),
+      email: normalizedEmail,
+      password_hash: passwordHash,
+    }, { onConflict: "email" })
+    .select("id,name,email,created_at")
+    .single();
+
+  if (error || !data) return null;
+
+  return {
+    id: String(data.id),
+    name: String(data.name),
+    email: String(data.email),
+    createdAt: new Date(String(data.created_at)).toLocaleDateString("en-MY", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    }),
+    passwordHash,
+  } satisfies StoredAccount;
+}
+
+async function findRemoteDemoAccount(email: string, password: string) {
+  if (!supabase) return null;
+
+  const normalizedEmail = email.trim().toLowerCase();
+  const passwordHash = await hashPassword(password);
+  const { data, error } = await supabase
+    .from(DEMO_ACCOUNTS_TABLE)
+    .select("id,name,email,created_at")
+    .eq("email", normalizedEmail)
+    .eq("password_hash", passwordHash)
+    .maybeSingle();
+
+  if (error || !data) return null;
+
+  return {
+    id: String(data.id),
+    name: String(data.name),
+    email: String(data.email),
+    createdAt: new Date(String(data.created_at)).toLocaleDateString("en-MY", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    }),
+    passwordHash,
+  } satisfies StoredAccount;
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<GovLensUser | null>(null);
   const [loading, setLoading] = useState(isSupabaseConfigured);
@@ -132,8 +205,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       const demoAccount = await findDemoAccount(normalizedEmail, password);
       if (demoAccount) {
-        localStorage.setItem(SESSION_KEY, demoAccount.id);
+        storeDemoSession(demoAccount);
         setUser(toPublicUser(demoAccount));
+        return { ok: true, message: "Signed in with your demo account." };
+      }
+
+      const remoteDemoAccount = await findRemoteDemoAccount(normalizedEmail, password);
+      if (remoteDemoAccount) {
+        storeDemoSession(remoteDemoAccount);
+        setUser(toPublicUser(remoteDemoAccount));
         return { ok: true, message: "Signed in with your demo account." };
       }
 
@@ -180,7 +260,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (password.length < 8) return { ok: false, error: "Password must be at least 8 characters." };
 
       if (supabase) {
-        const demoAccount = await upsertDemoAccount(trimmedName, normalizedEmail, password);
+        const remoteDemoAccount = await saveRemoteDemoAccount(trimmedName, normalizedEmail, password);
+        const demoAccount = remoteDemoAccount || await upsertDemoAccount(trimmedName, normalizedEmail, password);
         const { data, error } = await supabase.auth.signUp({
           email: normalizedEmail,
           password,
@@ -193,7 +274,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           return { ok: false, error: getFriendlyAuthError(error.message) };
         }
 
-        localStorage.setItem(SESSION_KEY, demoAccount.id);
+        storeDemoSession(demoAccount);
         setUser(toPublicUser(demoAccount));
 
         if (data.session && data.user) {
