@@ -144,13 +144,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           return { ok: true, message: "Signed in with your demo account." };
         }
 
-        if (error && isDemoSafeLoginError(error.message)) {
-          const account = await upsertDemoAccount(normalizedEmail.split("@")[0] || "GovLens user", normalizedEmail, password);
-          localStorage.setItem(SESSION_KEY, account.id);
-          setUser(toPublicUser(account));
-          return { ok: true, message: "Signed in with demo mode for this browser." };
-        }
-
         if (error) return { ok: false, error: getFriendlyAuthError(error.message) };
         if (!data.session || !data.user) {
           if (demoAccount) {
@@ -267,10 +260,6 @@ function getFriendlyAuthError(message: string) {
 
 function isDemoSafeSignupError(message: string) {
   return /already registered|already been registered|security purposes|rate limit/i.test(message);
-}
-
-function isDemoSafeLoginError(message: string) {
-  return /invalid login credentials|email not confirmed|security purposes|rate limit/i.test(message);
 }
 
 export function useAuth() {
