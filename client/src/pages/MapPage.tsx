@@ -38,6 +38,17 @@ export default function MapPage() {
         <p className="mt-1 text-sm" style={{ color: "rgba(255,255,255,0.45)" }}>
           Explore government budget allocations across all Malaysian states
         </p>
+        <div
+          className="mt-3 inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold"
+          style={{
+            background: "rgba(14,165,233,0.12)",
+            border: "1px solid rgba(14,165,233,0.28)",
+            color: "#7DD3FC",
+          }}
+        >
+          <Globe size={13} />
+          Interactive visual data map for HCI visual-tech requirement
+        </div>
       </motion.div>
 
       {/* National stats */}

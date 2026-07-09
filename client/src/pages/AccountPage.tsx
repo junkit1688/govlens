@@ -49,7 +49,7 @@ export default function AccountPage() {
         </div>
         <button
           onClick={() => {
-            logout();
+            void logout();
             toast.success("Signed out.");
             navigate("/");
           }}

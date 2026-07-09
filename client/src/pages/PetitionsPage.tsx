@@ -2,13 +2,16 @@
  * Browse, create, and sign petitions. Signature progress bars.
  * Glassmorphic Civic Premium design
  */
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLocation } from "wouter";
 import { FileText, Search, Filter, TrendingUp, Users, CheckCircle, Plus, MapPin, Tag, X } from "lucide-react";
 import { petitions as initialPetitions, type Petition } from "@/lib/mockData";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
+import SpeechInputButton from "@/components/SpeechInputButton";
+import { appendTranscript } from "@/lib/speechText";
+import { createPetition, fetchPetitions, signPetition } from "@/lib/govlensData";
 
 const STATUS_CONFIG = {
   active: { label: "Active", color: "#0EA5E9" },
@@ -36,6 +39,7 @@ export default function PetitionsPage() {
   const [allPetitions, setAllPetitions] = useState<Petition[]>(initialPetitions);
   const [showForm, setShowForm] = useState(false);
   const [selectedPetition, setSelectedPetition] = useState<Petition | null>(null);
+  const [saving, setSaving] = useState(false);
 
   // Form state
   const [formTitle, setFormTitle] = useState("");
@@ -51,26 +55,45 @@ export default function PetitionsPage() {
     return matchSearch && matchFilter;
   });
 
-  const handleSign = (id: string) => {
+  useEffect(() => {
+    fetchPetitions()
+      .then((remotePetitions) => {
+        if (remotePetitions.length) setAllPetitions([...remotePetitions, ...initialPetitions]);
+      })
+      .catch(() => toast.error("Could not load Supabase petitions. Showing prototype data."));
+  }, []);
+
+  const handleSign = async (id: string) => {
+    if (!user) { toast.info("Please sign in to sign petitions."); navigate("/login"); return; }
     if (signed.has(id)) {
       toast.info("You have already signed this petition.");
       return;
     }
+
+    try {
+      await signPetition(id, user.id);
+      toast.success("Petition signature saved to Supabase.");
+    } catch (error) {
+      if (String(error).includes("Supabase is not configured")) {
+        toast.success("Petition signed in prototype mode. Add Supabase env vars for shared storage.");
+      } else {
+        toast.error(error instanceof Error ? error.message : "Could not save signature.");
+        return;
+      }
+    }
+
     setSigned((prev) => { const next = new Set(prev); next.add(id); return next; });
-    setAllPetitions((prev) =>
-      prev.map((p) => p.id === id ? { ...p, signatures: p.signatures + 1 } : p)
-    );
-    toast.success("Petition signed successfully! Thank you for your support.");
+    setAllPetitions((prev) => prev.map((p) => p.id === id ? { ...p, signatures: p.signatures + 1 } : p));
   };
 
-  const handleSubmitPetition = () => {
+  const handleSubmitPetition = async () => {
     if (!user) { toast.info("Please sign in to create a petition."); navigate("/login"); return; }
     if (!formTitle.trim()) { toast.error("Please enter a petition title."); return; }
     if (!formDescription.trim()) { toast.error("Please enter a description."); return; }
     if (!formState) { toast.error("Please select a state."); return; }
     if (!formCategory) { toast.error("Please select a category."); return; }
 
-    const newPetition: Petition = {
+    const localPetition: Petition = {
       id: `pet-${Date.now()}`,
       title: formTitle.trim(),
       description: formDescription.trim(),
@@ -84,9 +107,31 @@ export default function PetitionsPage() {
       tags: formTags.split(",").map((t) => t.trim()).filter(Boolean),
     };
 
-    setAllPetitions((prev) => [newPetition, ...prev]);
-    setSigned((prev) => { const next = new Set(prev); next.add(newPetition.id); return next; });
-    toast.success("Petition created successfully! Share it to gather signatures.");
+    setSaving(true);
+    try {
+      const savedPetition = await createPetition({
+        userId: user.id,
+        title: localPetition.title,
+        description: localPetition.description,
+        state: localPetition.state,
+        category: localPetition.category,
+        target: localPetition.target,
+        tags: localPetition.tags,
+      });
+      setAllPetitions((prev) => [savedPetition, ...prev]);
+      setSigned((prev) => { const next = new Set(prev); next.add(savedPetition.id); return next; });
+      toast.success("Petition created in Supabase.");
+    } catch (error) {
+      if (String(error).includes("Supabase is not configured")) {
+        setAllPetitions((prev) => [localPetition, ...prev]);
+        setSigned((prev) => { const next = new Set(prev); next.add(localPetition.id); return next; });
+        toast.success("Petition created in prototype mode. Add Supabase env vars for shared storage.");
+      } else {
+        toast.error(error instanceof Error ? error.message : "Could not save petition.");
+        setSaving(false);
+        return;
+      }
+    }
 
     // Reset form
     setFormTitle("");
@@ -96,6 +141,7 @@ export default function PetitionsPage() {
     setFormTarget("1000");
     setFormTags("");
     setShowForm(false);
+    setSaving(false);
   };
 
   return (
@@ -370,9 +416,12 @@ export default function PetitionsPage() {
 
                 {/* Description */}
                 <div>
-                  <label className="text-xs font-semibold mb-1.5 block" style={{ color: "rgba(255,255,255,0.6)" }}>
-                    Description *
-                  </label>
+                  <div className="flex items-center justify-between gap-3 mb-1.5">
+                    <label className="text-xs font-semibold block" style={{ color: "rgba(255,255,255,0.6)" }}>
+                      Description *
+                    </label>
+                    <SpeechInputButton onTranscript={(text) => setFormDescription((current) => appendTranscript(current, text))} />
+                  </div>
                   <textarea
                     value={formDescription}
                     onChange={(e) => setFormDescription(e.target.value)}
@@ -480,13 +529,14 @@ export default function PetitionsPage() {
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.97 }}
                   onClick={handleSubmitPetition}
+                  disabled={saving}
                   className="w-full py-3 rounded-xl text-sm font-bold text-white mt-2"
                   style={{
                     background: "linear-gradient(135deg, #0EA5E9, #6366F1)",
                     boxShadow: "0 0 20px rgba(14,165,233,0.25)",
                   }}
                 >
-                  Create Petition
+                  {saving ? "Creating..." : "Create Petition"}
                 </motion.button>
               </div>
             </motion.div>

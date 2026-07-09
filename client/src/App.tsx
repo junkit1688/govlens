@@ -8,7 +8,7 @@ import NotFound from "@/pages/NotFound";
 import { Router as WouterRouter, Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
-import { AuthProvider } from "./contexts/AuthContext";
+import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import DashboardLayout from "./components/DashboardLayout";
 import Home from "./pages/Home";
 import AuthPage from "./pages/AuthPage";
@@ -34,7 +34,9 @@ function Router() {
       </Route>
       <Route path="/account">
         <DashboardLayout>
-          <AccountPage />
+          <RequireAuth>
+            <AccountPage />
+          </RequireAuth>
         </DashboardLayout>
       </Route>
       <Route path="/map">
@@ -73,6 +75,15 @@ function Router() {
       <Route component={NotFound} />
     </Switch>
   );
+}
+
+function RequireAuth({ children }: { children: React.ReactNode }) {
+  const { user, loading } = useAuth();
+
+  if (loading) return null;
+  if (!user) return <AuthPage mode="login" />;
+
+  return children;
 }
 
 function App() {

@@ -3,13 +3,16 @@
  * Track report status, upvote reports
  * Glassmorphic Civic Premium design
  */
-import { useState, type ChangeEvent } from "react";
+import { useEffect, useState, type ChangeEvent } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLocation } from "wouter";
 import { AlertTriangle, Search, Plus, MapPin, Clock, CheckCircle, Activity, ThumbsUp, Camera, X } from "lucide-react";
 import { citizenReports as initialReports, type CitizenReport } from "@/lib/mockData";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
+import SpeechInputButton from "@/components/SpeechInputButton";
+import { appendTranscript } from "@/lib/speechText";
+import { createReport, fetchReports } from "@/lib/govlensData";
 
 const CATEGORY_CONFIG: Record<CitizenReport["category"], { label: string; color: string; emoji: string }> = {
   pothole: { label: "Pothole", color: "#EF4444", emoji: "🕳️" },
@@ -69,6 +72,7 @@ export default function ReportsPage() {
   const [reports, setReports] = useState<CitizenReport[]>(initialReports);
   const [showForm, setShowForm] = useState(false);
   const [selectedReport, setSelectedReport] = useState<CitizenReport | null>(null);
+  const [saving, setSaving] = useState(false);
 
   // Form state
   const [formTitle, setFormTitle] = useState("");
@@ -85,6 +89,14 @@ export default function ReportsPage() {
     const matchCat = catFilter === "all" || r.category === catFilter;
     return matchSearch && matchStatus && matchCat;
   });
+
+  useEffect(() => {
+    fetchReports()
+      .then((remoteReports) => {
+        if (remoteReports.length) setReports([...remoteReports, ...initialReports]);
+      })
+      .catch(() => toast.error("Could not load Supabase reports. Showing prototype data."));
+  }, []);
 
   const handleUpvote = (id: string) => {
     if (upvoted.has(id)) {
@@ -113,7 +125,7 @@ export default function ReportsPage() {
     reader.readAsDataURL(file);
   };
 
-  const handleSubmitReport = () => {
+  const handleSubmitReport = async () => {
     if (!user) { toast.info("Please sign in to submit a report."); navigate("/login"); return; }
     if (!formTitle.trim()) { toast.error("Please enter a report title."); return; }
     if (!formDescription.trim()) { toast.error("Please describe the issue."); return; }
@@ -122,7 +134,7 @@ export default function ReportsPage() {
     if (!formLocation.trim()) { toast.error("Please enter the location."); return; }
 
     const fallbackImage = REPORT_IMAGE_FALLBACKS[formCategory as CitizenReport["category"]];
-    const newReport: CitizenReport = {
+    const localReport: CitizenReport = {
       id: `rpt-${Date.now()}`,
       title: formTitle.trim(),
       description: formDescription.trim(),
@@ -137,8 +149,29 @@ export default function ReportsPage() {
       imageAlt: formImageName ? `Uploaded report image: ${formImageName}` : fallbackImage.alt,
     };
 
-    setReports((prev) => [newReport, ...prev]);
-    toast.success("Report submitted! Authorities will be notified.");
+    setSaving(true);
+    try {
+      const savedReport = await createReport({
+        userId: user.id,
+        title: localReport.title,
+        description: localReport.description,
+        category: localReport.category,
+        state: localReport.state,
+        locationText: localReport.location,
+        imageUrl: localReport.imageUrl,
+      });
+      setReports((prev) => [savedReport, ...prev]);
+      toast.success("Report submitted to Supabase.");
+    } catch (error) {
+      if (String(error).includes("Supabase is not configured")) {
+        setReports((prev) => [localReport, ...prev]);
+        toast.success("Report saved in prototype mode. Add Supabase env vars for shared storage.");
+      } else {
+        toast.error(error instanceof Error ? error.message : "Could not save report to Supabase.");
+        setSaving(false);
+        return;
+      }
+    }
 
     // Reset form
     setFormTitle("");
@@ -149,6 +182,7 @@ export default function ReportsPage() {
     setFormImageUrl("");
     setFormImageName("");
     setShowForm(false);
+    setSaving(false);
   };
 
   const pendingCount = reports.filter((r) => r.status === "pending").length;
@@ -488,9 +522,12 @@ export default function ReportsPage() {
 
                 {/* Description */}
                 <div>
-                  <label className="text-xs font-semibold mb-1.5 block" style={{ color: "rgba(255,255,255,0.6)" }}>
-                    Description *
-                  </label>
+                  <div className="flex items-center justify-between gap-3 mb-1.5">
+                    <label className="text-xs font-semibold block" style={{ color: "rgba(255,255,255,0.6)" }}>
+                      Description *
+                    </label>
+                    <SpeechInputButton onTranscript={(text) => setFormDescription((current) => appendTranscript(current, text))} />
+                  </div>
                   <textarea
                     value={formDescription}
                     onChange={(e) => setFormDescription(e.target.value)}
@@ -644,13 +681,14 @@ export default function ReportsPage() {
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.97 }}
                   onClick={handleSubmitReport}
+                  disabled={saving}
                   className="w-full py-3 rounded-xl text-sm font-bold text-white mt-2"
                   style={{
                     background: "linear-gradient(135deg, #EF4444, #F97316)",
                     boxShadow: "0 0 20px rgba(239,68,68,0.25)",
                   }}
                 >
-                  Submit Report
+                  {saving ? "Submitting..." : "Submit Report"}
                 </motion.button>
               </div>
             </motion.div>

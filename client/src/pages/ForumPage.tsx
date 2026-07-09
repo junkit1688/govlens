@@ -2,13 +2,16 @@
  * Discussion boards, trending topics, community cards
  * Glassmorphic Civic Premium design
  */
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLocation } from "wouter";
 import { MessageSquare, Search, TrendingUp, Heart, Eye, Reply, MapPin, Tag, Flame, Plus, X } from "lucide-react";
 import { forumPosts as initialPosts, type ForumPost } from "@/lib/mockData";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
+import SpeechInputButton from "@/components/SpeechInputButton";
+import { appendTranscript } from "@/lib/speechText";
+import { createForumPost, fetchForumPosts } from "@/lib/govlensData";
 
 const CATEGORIES = ["All", "Transportation", "Infrastructure", "Healthcare", "Environment", "Agriculture", "Community", "Utilities"];
 
@@ -27,6 +30,7 @@ export default function ForumPage() {
   const [allPosts, setAllPosts] = useState<ForumPost[]>(initialPosts);
   const [showForm, setShowForm] = useState(false);
   const [selectedPost, setSelectedPost] = useState<ForumPost | null>(null);
+  const [saving, setSaving] = useState(false);
 
   // Form state
   const [formTitle, setFormTitle] = useState("");
@@ -43,6 +47,14 @@ export default function ForumPage() {
 
   const trending = allPosts.filter((p) => p.trending);
 
+  useEffect(() => {
+    fetchForumPosts()
+      .then((remotePosts) => {
+        if (remotePosts.length) setAllPosts([...remotePosts, ...initialPosts]);
+      })
+      .catch(() => toast.error("Could not load Supabase forum posts. Showing prototype data."));
+  }, []);
+
   const handleLike = (id: string) => {
     setLiked((prev) => {
       const next = new Set(prev);
@@ -58,14 +70,14 @@ export default function ForumPage() {
     });
   };
 
-  const handleSubmitPost = () => {
+  const handleSubmitPost = async () => {
     if (!user) { toast.info("Please sign in to publish a forum post."); navigate("/login"); return; }
     if (!formTitle.trim()) { toast.error("Please enter a post title."); return; }
     if (!formContent.trim()) { toast.error("Please enter post content."); return; }
     if (!formState) { toast.error("Please select a state."); return; }
     if (!formCategory) { toast.error("Please select a category."); return; }
 
-    const newPost: ForumPost = {
+    const localPost: ForumPost = {
       id: `post-${Date.now()}`,
       title: formTitle.trim(),
       content: formContent.trim(),
@@ -80,8 +92,28 @@ export default function ForumPage() {
       trending: false,
     };
 
-    setAllPosts((prev) => [newPost, ...prev]);
-    toast.success("Post published! Your discussion is now live.");
+    setSaving(true);
+    try {
+      const savedPost = await createForumPost({
+        userId: user.id,
+        title: localPost.title,
+        content: localPost.content,
+        state: localPost.state,
+        category: localPost.category,
+        tags: localPost.tags,
+      });
+      setAllPosts((prev) => [savedPost, ...prev]);
+      toast.success("Forum post published to Supabase.");
+    } catch (error) {
+      if (String(error).includes("Supabase is not configured")) {
+        setAllPosts((prev) => [localPost, ...prev]);
+        toast.success("Post published in prototype mode. Add Supabase env vars for shared storage.");
+      } else {
+        toast.error(error instanceof Error ? error.message : "Could not save forum post.");
+        setSaving(false);
+        return;
+      }
+    }
 
     // Reset form
     setFormTitle("");
@@ -90,6 +122,7 @@ export default function ForumPage() {
     setFormCategory("");
     setFormTags("");
     setShowForm(false);
+    setSaving(false);
   };
 
   return (
@@ -422,9 +455,12 @@ export default function ForumPage() {
 
                 {/* Content */}
                 <div>
-                  <label className="text-xs font-semibold mb-1.5 block" style={{ color: "rgba(255,255,255,0.6)" }}>
-                    Content *
-                  </label>
+                  <div className="flex items-center justify-between gap-3 mb-1.5">
+                    <label className="text-xs font-semibold block" style={{ color: "rgba(255,255,255,0.6)" }}>
+                      Content *
+                    </label>
+                    <SpeechInputButton onTranscript={(text) => setFormContent((current) => appendTranscript(current, text))} />
+                  </div>
                   <textarea
                     value={formContent}
                     onChange={(e) => setFormContent(e.target.value)}
@@ -511,13 +547,14 @@ export default function ForumPage() {
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.97 }}
                   onClick={handleSubmitPost}
+                  disabled={saving}
                   className="w-full py-3 rounded-xl text-sm font-bold text-white mt-2"
                   style={{
                     background: "linear-gradient(135deg, #0EA5E9, #6366F1)",
                     boxShadow: "0 0 20px rgba(14,165,233,0.25)",
                   }}
                 >
-                  Publish Post
+                  {saving ? "Publishing..." : "Publish Post"}
                 </motion.button>
               </div>
             </motion.div>

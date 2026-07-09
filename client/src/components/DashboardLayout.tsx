@@ -2,7 +2,7 @@
  * Fixed left sidebar (64px collapsed / 240px expanded) + top bar + main content
  * Dark navy background with glass sidebar
  */
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import { statesData } from "@/lib/mockData";
 import { useAuth } from "@/contexts/AuthContext";
+import { fetchNotifications, type GovLensNotification } from "@/lib/govlensData";
 
 const navItems = [
   { icon: Map, label: "Spending Map", href: "/map" },
@@ -31,6 +32,12 @@ const navItems = [
   { icon: Vote, label: "Voting", href: "/voting" },
   { icon: MessageSquare, label: "Forum", href: "/forum" },
   { icon: AlertTriangle, label: "Reports", href: "/reports" },
+];
+
+const fallbackNotifications = [
+  "New budget updates added for Selangor.",
+  "3 citizen reports moved to investigating.",
+  "Public voting closes soon for active initiatives.",
 ];
 
 interface DashboardLayoutProps {
@@ -41,6 +48,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [notifications, setNotifications] = useState<GovLensNotification[]>([]);
   const [location, navigate] = useLocation();
   const { user, logout } = useAuth();
   const userInitials = user
@@ -60,6 +68,12 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         .filter((item) => item.label.toLowerCase().includes(search.trim().toLowerCase()))
         .slice(0, 6)
     : [];
+
+  useEffect(() => {
+    fetchNotifications(user?.id)
+      .then(setNotifications)
+      .catch(() => setNotifications([]));
+  }, [user?.id]);
 
   return (
     <div className="civic-shell flex h-screen overflow-hidden">
@@ -309,11 +323,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                   boxShadow: "0 16px 40px rgba(0,0,0,0.35)",
                 }}
               >
-                {[
-                  "New budget updates added for Selangor.",
-                  "3 citizen reports moved to investigating.",
-                  "Public voting closes soon for active initiatives.",
-                ].map((message) => (
+                {(notifications.length ? notifications.map((item) => item.message) : fallbackNotifications).map((message) => (
                   <div
                     key={message}
                     className="py-2 text-xs"
@@ -341,7 +351,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 </Link>
                 <button
                   onClick={() => {
-                    logout();
+                    void logout();
                     toast.success("Signed out.");
                     navigate("/");
                   }}

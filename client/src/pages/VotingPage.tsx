@@ -4,20 +4,48 @@
  */
 import { useState } from "react";
 import { motion } from "framer-motion";
+import { useLocation } from "wouter";
 import { Vote, Users, BarChart3, CheckCircle, MapPin, Calendar } from "lucide-react";
 import { votes } from "@/lib/mockData";
 import { toast } from "sonner";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
+import { useAuth } from "@/contexts/AuthContext";
+import { castVote } from "@/lib/govlensData";
 
 export default function VotingPage() {
+  const { user } = useAuth();
+  const [, navigate] = useLocation();
   const [userVotes, setUserVotes] = useState<Record<string, number>>({});
   const [allVotes, setAllVotes] = useState(votes);
 
-  const handleVote = (voteId: string, optionIndex: number) => {
+  const handleVote = async (voteId: string, optionIndex: number) => {
+    if (!user) { toast.info("Please sign in to vote."); navigate("/login"); return; }
     if (userVotes[voteId] !== undefined) {
       toast.info("You have already voted on this initiative.");
       return;
     }
+    const selectedVote = allVotes.find((vote) => vote.id === voteId);
+    const selectedOption = selectedVote?.options[optionIndex];
+    if (!selectedVote || !selectedOption) return;
+
+    try {
+      await castVote({
+        userId: user.id,
+        policyId: selectedVote.id,
+        policyTitle: selectedVote.title,
+        optionIndex,
+        optionLabel: selectedOption.label,
+      });
+      toast.success("Vote recorded in Supabase.");
+    } catch (error) {
+      if (String(error).includes("Supabase is not configured")) {
+        toast.success("Vote recorded in prototype mode. Add Supabase env vars for shared storage.");
+      } else {
+        toast.error(error instanceof Error ? error.message : "Could not save vote.");
+        return;
+      }
+    }
+
     setUserVotes((prev) => ({ ...prev, [voteId]: optionIndex }));
     setAllVotes((prev) =>
       prev.map((vote) =>
@@ -32,7 +60,6 @@ export default function VotingPage() {
           : vote
       )
     );
-    toast.success("Vote recorded! Thank you for participating.");
   };
 
   const totalVotesAll = allVotes.reduce((a, v) => a + v.totalVotes, 0);
