@@ -199,8 +199,8 @@ export default function AuthPage({ mode }: AuthPageProps) {
             </Link>
           </p>
 
-          <p className="mt-4 text-xs leading-relaxed" style={{ color: "rgba(255,255,255,0.36)" }}>
-            Supabase Auth is used when VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY are configured. Without them, GovLens falls back to local prototype accounts for classroom demos.
+          <p className="mt-4 text-xs leading-relaxed text-center" style={{ color: "rgba(255,255,255,0.36)" }}>
+            GovLens uses secure Supabase authentication for email and GitHub sign-in.
           </p>
         </motion.form>
       </main>
