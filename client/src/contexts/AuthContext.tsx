@@ -131,6 +131,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const normalizedEmail = email.trim().toLowerCase();
 
       const demoAccount = await findDemoAccount(normalizedEmail, password);
+      if (demoAccount) {
+        localStorage.setItem(SESSION_KEY, demoAccount.id);
+        setUser(toPublicUser(demoAccount));
+        return { ok: true, message: "Signed in with your demo account." };
+      }
 
       if (supabase) {
         const { data, error } = await supabase.auth.signInWithPassword({
@@ -138,20 +143,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           password,
         });
 
-        if (error && demoAccount) {
-          localStorage.setItem(SESSION_KEY, demoAccount.id);
-          setUser(toPublicUser(demoAccount));
-          return { ok: true, message: "Signed in with your demo account." };
-        }
-
         if (error) return { ok: false, error: getFriendlyAuthError(error.message) };
         if (!data.session || !data.user) {
-          if (demoAccount) {
-            localStorage.setItem(SESSION_KEY, demoAccount.id);
-            setUser(toPublicUser(demoAccount));
-            return { ok: true, message: "Signed in with your demo account." };
-          }
-
           return { ok: false, error: "No active login session was returned. Please try again." };
         }
 
@@ -159,11 +152,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return { ok: true };
       }
 
-      if (!demoAccount) return { ok: false, error: "No demo account found with that email and password." };
-
-      localStorage.setItem(SESSION_KEY, demoAccount.id);
-      setUser(toPublicUser(demoAccount));
-      return { ok: true };
+      return { ok: false, error: "No demo account found with that email and password." };
     },
     loginWithGitHub: async () => {
       if (!supabase) {
