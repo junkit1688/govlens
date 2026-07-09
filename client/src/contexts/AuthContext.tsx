@@ -318,7 +318,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 function getFriendlyAuthError(message: string) {
   if (/email not confirmed/i.test(message)) {
-    return "This Supabase account needs email confirmation. For this demo, create the account once on this browser and log in again here.";
+    return "This email exists in Supabase Auth but is not confirmed. For the demo, create the account in GovLens first and make sure the Supabase demo_accounts table has been created.";
   }
 
   if (/security purposes|rate limit/i.test(message)) {
