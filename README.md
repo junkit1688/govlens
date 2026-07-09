@@ -59,6 +59,8 @@ Do not commit `.env`. It is already ignored by `.gitignore`.
 
 The app uses Supabase Auth when these variables are present. If they are missing, GovLens falls back to local prototype accounts so the UI can still be demonstrated without backend credentials.
 
+For the easiest classroom demo flow, open Supabase `Authentication` -> `Sign In / Providers` -> `Email` and turn off email confirmation. If email confirmation stays on, newly created users are saved in Supabase but must confirm their email before they can log in again.
+
 ### GitHub Login Through Supabase
 
 GitHub login needs dashboard setup because the GitHub Client Secret must never be committed to this repo.

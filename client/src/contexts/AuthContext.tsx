@@ -15,6 +15,8 @@ interface StoredAccount extends GovLensUser {
 
 interface AuthResult {
   ok: boolean;
+  message?: string;
+  needsEmailConfirmation?: boolean;
   error?: string;
 }
 
@@ -103,8 +105,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           password,
         });
 
-        if (error) return { ok: false, error: error.message };
-        if (data.user) setUser(toGovLensUser(data.user));
+        if (error) return { ok: false, error: getFriendlyAuthError(error.message) };
+        if (!data.session || !data.user) {
+          return { ok: false, error: "No active login session was returned. Please try again." };
+        }
+
+        setUser(toGovLensUser(data.user));
         return { ok: true };
       }
 
@@ -154,9 +160,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           },
         });
 
-        if (error) return { ok: false, error: error.message };
-        if (data.user) setUser(toGovLensUser(data.user));
-        return { ok: true };
+        if (error) return { ok: false, error: getFriendlyAuthError(error.message) };
+        if (data.session && data.user) {
+          setUser(toGovLensUser(data.user));
+          return { ok: true };
+        }
+
+        return {
+          ok: true,
+          needsEmailConfirmation: true,
+          message: "Account created in Supabase. Please confirm your email before logging in.",
+        };
       }
 
       const accounts = readAccounts();
@@ -185,6 +199,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }), [loading, user]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+}
+
+function getFriendlyAuthError(message: string) {
+  if (/email not confirmed/i.test(message)) {
+    return "Please confirm your email in Supabase before logging in, or turn off email confirmation for demo accounts.";
+  }
+
+  return message;
 }
 
 export function useAuth() {
