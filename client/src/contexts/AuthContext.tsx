@@ -16,7 +16,6 @@ interface StoredAccount extends GovLensUser {
 interface AuthResult {
   ok: boolean;
   message?: string;
-  needsEmailConfirmation?: boolean;
   error?: string;
 }
 
@@ -60,6 +59,38 @@ function toPublicUser(account: StoredAccount): GovLensUser {
   return user;
 }
 
+async function upsertDemoAccount(name: string, email: string, password: string) {
+  const normalizedEmail = email.trim().toLowerCase();
+  const accounts = readAccounts();
+  const existingIndex = accounts.findIndex((item) => item.email === normalizedEmail);
+  const passwordHash = await hashPassword(password);
+  const account: StoredAccount = {
+    id: existingIndex >= 0 ? accounts[existingIndex].id : `usr-${Date.now()}`,
+    name: name.trim(),
+    email: normalizedEmail,
+    createdAt: existingIndex >= 0
+      ? accounts[existingIndex].createdAt
+      : new Date().toLocaleDateString("en-MY", { year: "numeric", month: "short", day: "numeric" }),
+    passwordHash,
+  };
+
+  const nextAccounts = existingIndex >= 0
+    ? accounts.map((item, index) => index === existingIndex ? account : item)
+    : [account, ...accounts];
+
+  writeAccounts(nextAccounts);
+  return account;
+}
+
+async function findDemoAccount(email: string, password: string) {
+  const normalizedEmail = email.trim().toLowerCase();
+  const account = readAccounts().find((item) => item.email === normalizedEmail);
+  if (!account) return null;
+
+  const passwordHash = await hashPassword(password);
+  return account.passwordHash === passwordHash ? account : null;
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<GovLensUser | null>(null);
   const [loading, setLoading] = useState(isSupabaseConfigured);
@@ -99,14 +130,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     login: async (email, password) => {
       const normalizedEmail = email.trim().toLowerCase();
 
+      const demoAccount = await findDemoAccount(normalizedEmail, password);
+
       if (supabase) {
         const { data, error } = await supabase.auth.signInWithPassword({
           email: normalizedEmail,
           password,
         });
 
+        if (error && demoAccount) {
+          localStorage.setItem(SESSION_KEY, demoAccount.id);
+          setUser(toPublicUser(demoAccount));
+          return { ok: true, message: "Signed in with your demo account." };
+        }
+
         if (error) return { ok: false, error: getFriendlyAuthError(error.message) };
         if (!data.session || !data.user) {
+          if (demoAccount) {
+            localStorage.setItem(SESSION_KEY, demoAccount.id);
+            setUser(toPublicUser(demoAccount));
+            return { ok: true, message: "Signed in with your demo account." };
+          }
+
           return { ok: false, error: "No active login session was returned. Please try again." };
         }
 
@@ -114,16 +159,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return { ok: true };
       }
 
-      const account = readAccounts().find((item) => item.email === normalizedEmail);
-      if (!account) return { ok: false, error: "No account found with that email." };
+      if (!demoAccount) return { ok: false, error: "No demo account found with that email and password." };
 
-      const passwordHash = await hashPassword(password);
-      if (account.passwordHash !== passwordHash) {
-        return { ok: false, error: "Incorrect password." };
-      }
-
-      localStorage.setItem(SESSION_KEY, account.id);
-      setUser(toPublicUser(account));
+      localStorage.setItem(SESSION_KEY, demoAccount.id);
+      setUser(toPublicUser(demoAccount));
       return { ok: true };
     },
     loginWithGitHub: async () => {
@@ -152,6 +191,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (password.length < 8) return { ok: false, error: "Password must be at least 8 characters." };
 
       if (supabase) {
+        const demoAccount = await upsertDemoAccount(trimmedName, normalizedEmail, password);
         const { data, error } = await supabase.auth.signUp({
           email: normalizedEmail,
           password,
@@ -160,7 +200,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           },
         });
 
-        if (error) return { ok: false, error: getFriendlyAuthError(error.message) };
+        if (error && !isDemoSafeSignupError(error.message)) {
+          return { ok: false, error: getFriendlyAuthError(error.message) };
+        }
+
+        localStorage.setItem(SESSION_KEY, demoAccount.id);
+        setUser(toPublicUser(demoAccount));
+
         if (data.session && data.user) {
           setUser(toGovLensUser(data.user));
           return { ok: true };
@@ -168,8 +214,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         return {
           ok: true,
-          needsEmailConfirmation: true,
-          message: "Account created in Supabase. Please confirm your email before logging in.",
+          message: "Demo account ready. Supabase also received the signup request.",
         };
       }
 
@@ -203,10 +248,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 function getFriendlyAuthError(message: string) {
   if (/email not confirmed/i.test(message)) {
-    return "Please confirm your email in Supabase before logging in, or turn off email confirmation for demo accounts.";
+    return "This Supabase account needs email confirmation. For this demo, create the account once on this browser and log in again here.";
+  }
+
+  if (/security purposes|rate limit/i.test(message)) {
+    return "Supabase is rate limiting auth emails. For this demo, use the account you already created in this browser.";
   }
 
   return message;
+}
+
+function isDemoSafeSignupError(message: string) {
+  return /already registered|already been registered|security purposes|rate limit/i.test(message);
 }
 
 export function useAuth() {

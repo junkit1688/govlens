@@ -35,12 +35,6 @@ export default function AuthPage({ mode }: AuthPageProps) {
       return;
     }
 
-    if (result.needsEmailConfirmation) {
-      toast.success(result.message || "Account created. Please confirm your email before logging in.");
-      navigate("/login");
-      return;
-    }
-
     toast.success(result.message || (isRegister ? "Account created. Welcome to GovLens." : "Welcome back."));
     navigate("/account");
   };
