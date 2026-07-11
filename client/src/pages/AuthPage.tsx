@@ -1,7 +1,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { Link, useLocation } from "wouter";
 import { motion } from "framer-motion";
-import { ArrowRight, Eye, Github, Lock, Mail, UserRound } from "lucide-react";
+import { ArrowRight, Eye, Lock, Mail, UserRound } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -10,7 +10,7 @@ interface AuthPageProps {
 }
 
 export default function AuthPage({ mode }: AuthPageProps) {
-  const { user, login, loginWithGitHub, register } = useAuth();
+  const { user, login, register } = useAuth();
   const [, navigate] = useLocation();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -37,16 +37,6 @@ export default function AuthPage({ mode }: AuthPageProps) {
 
     toast.success(result.message || (isRegister ? "Account created. Welcome to GovLens." : "Welcome back."));
     navigate("/account");
-  };
-
-  const handleGitHubLogin = async () => {
-    setBusy(true);
-    const result = await loginWithGitHub();
-    setBusy(false);
-
-    if (!result.ok) {
-      toast.error(result.error || "Unable to continue with GitHub.");
-    }
   };
 
   return (
@@ -128,7 +118,7 @@ export default function AuthPage({ mode }: AuthPageProps) {
               {isRegister ? "Create account" : "Welcome back"}
             </h2>
             <p className="mt-2 text-sm" style={{ color: "rgba(255,255,255,0.52)" }}>
-              {isRegister ? "Use Supabase Auth to create your GovLens account." : "Log in with your Supabase account."}
+              {isRegister ? "Create your GovLens demo account." : "Log in with your GovLens account."}
             </p>
           </div>
 
@@ -169,29 +159,6 @@ export default function AuthPage({ mode }: AuthPageProps) {
             {!busy && <ArrowRight size={17} />}
           </button>
 
-          <div className="my-5 flex items-center gap-3">
-            <div className="h-px flex-1" style={{ background: "rgba(255,255,255,0.1)" }} />
-            <span className="text-xs font-semibold uppercase" style={{ color: "rgba(255,255,255,0.38)" }}>
-              or
-            </span>
-            <div className="h-px flex-1" style={{ background: "rgba(255,255,255,0.1)" }} />
-          </div>
-
-          <button
-            type="button"
-            disabled={busy}
-            onClick={handleGitHubLogin}
-            className="w-full flex items-center justify-center gap-2 rounded-xl px-5 py-3.5 text-sm font-bold disabled:opacity-60"
-            style={{
-              background: "rgba(255,255,255,0.06)",
-              border: "1px solid rgba(255,255,255,0.12)",
-              color: "rgba(255,255,255,0.9)",
-            }}
-          >
-            <Github size={17} />
-            Continue with GitHub
-          </button>
-
           <p className="mt-5 text-center text-sm" style={{ color: "rgba(255,255,255,0.55)" }}>
             {isRegister ? "Already have an account?" : "New to GovLens?"}{" "}
             <Link href={isRegister ? "/login" : "/register"}>
@@ -200,7 +167,7 @@ export default function AuthPage({ mode }: AuthPageProps) {
           </p>
 
           <p className="mt-4 text-xs leading-relaxed text-center" style={{ color: "rgba(255,255,255,0.36)" }}>
-            GovLens uses secure Supabase authentication for email and GitHub sign-in.
+            GovLens uses email accounts for this classroom demo.
           </p>
         </motion.form>
       </main>

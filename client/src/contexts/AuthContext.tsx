@@ -24,7 +24,6 @@ interface AuthContextValue {
   loading: boolean;
   isBackendConfigured: boolean;
   login: (email: string, password: string) => Promise<AuthResult>;
-  loginWithGitHub: () => Promise<AuthResult>;
   register: (name: string, email: string, password: string) => Promise<AuthResult>;
   logout: () => Promise<void>;
 }
@@ -95,6 +94,12 @@ async function findDemoAccount(email: string, password: string) {
 function storeDemoSession(account: StoredAccount) {
   localStorage.setItem(SESSION_KEY, account.id);
   setStoredDemoAccount(account);
+}
+
+function getStoredDemoSession() {
+  const sessionId = localStorage.getItem(SESSION_KEY);
+  if (!sessionId) return null;
+  return readAccounts().find((item) => item.id === sessionId) || null;
 }
 
 function setStoredDemoAccount(account: StoredAccount) {
@@ -169,12 +174,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(isSupabaseConfigured);
 
   useEffect(() => {
-    if (!supabase) {
-      const sessionId = localStorage.getItem(SESSION_KEY);
-      if (!sessionId) return;
+    const demoSession = getStoredDemoSession();
+    if (demoSession) {
+      setUser(toPublicUser(demoSession));
+      setLoading(false);
+      return;
+    }
 
-      const account = readAccounts().find((item) => item.id === sessionId);
-      if (account) setUser(toPublicUser(account));
+    if (!supabase) {
+      setLoading(false);
       return;
     }
 
@@ -233,24 +241,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       return { ok: false, error: "No demo account found with that email and password." };
-    },
-    loginWithGitHub: async () => {
-      if (!supabase) {
-        return {
-          ok: false,
-          error: "Supabase is not configured yet. Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY first.",
-        };
-      }
-
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: "github",
-        options: {
-          redirectTo: `${window.location.origin}/account`,
-        },
-      });
-
-      if (error) return { ok: false, error: error.message };
-      return { ok: true };
     },
     register: async (name, email, password) => {
       const trimmedName = name.trim();

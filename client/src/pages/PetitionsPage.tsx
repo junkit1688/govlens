@@ -5,13 +5,13 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLocation } from "wouter";
-import { FileText, Search, Filter, TrendingUp, Users, CheckCircle, Plus, MapPin, Tag, X } from "lucide-react";
+import { FileText, Search, Filter, TrendingUp, Users, CheckCircle, Plus, MapPin, Tag, X, Trash2 } from "lucide-react";
 import { petitions as initialPetitions, type Petition } from "@/lib/mockData";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import SpeechInputButton from "@/components/SpeechInputButton";
 import { appendTranscript } from "@/lib/speechText";
-import { createPetition, fetchPetitions, signPetition } from "@/lib/govlensData";
+import { createPetition, deletePetition, fetchPetitions, signPetition } from "@/lib/govlensData";
 
 const STATUS_CONFIG = {
   active: { label: "Active", color: "#0EA5E9" },
@@ -40,6 +40,7 @@ export default function PetitionsPage() {
   const [showForm, setShowForm] = useState(false);
   const [selectedPetition, setSelectedPetition] = useState<Petition | null>(null);
   const [saving, setSaving] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   // Form state
   const [formTitle, setFormTitle] = useState("");
@@ -63,27 +64,31 @@ export default function PetitionsPage() {
       .catch(() => toast.error("Could not load Supabase petitions. Showing prototype data."));
   }, []);
 
-  const handleSign = async (id: string) => {
+  const handleSign = async (petition: Petition) => {
     if (!user) { toast.info("Please sign in to sign petitions."); navigate("/login"); return; }
-    if (signed.has(id)) {
+    if (signed.has(petition.id)) {
       toast.info("You have already signed this petition.");
       return;
     }
 
-    try {
-      await signPetition(id, user.id);
-      toast.success("Petition signature saved to Supabase.");
-    } catch (error) {
-      if (String(error).includes("Supabase is not configured")) {
-        toast.success("Petition signed in prototype mode. Add Supabase env vars for shared storage.");
-      } else {
-        toast.error(error instanceof Error ? error.message : "Could not save signature.");
-        return;
+    if (petition.userId) {
+      try {
+        await signPetition(petition.id, user.id);
+        toast.success("Petition signature saved to Supabase.");
+      } catch (error) {
+        if (String(error).includes("Supabase is not configured")) {
+          toast.success("Petition signed in prototype mode. Add Supabase env vars for shared storage.");
+        } else {
+          toast.error(error instanceof Error ? error.message : "Could not save signature.");
+          return;
+        }
       }
+    } else {
+      toast.success("Prototype petition signed locally.");
     }
 
-    setSigned((prev) => { const next = new Set(prev); next.add(id); return next; });
-    setAllPetitions((prev) => prev.map((p) => p.id === id ? { ...p, signatures: p.signatures + 1 } : p));
+    setSigned((prev) => { const next = new Set(prev); next.add(petition.id); return next; });
+    setAllPetitions((prev) => prev.map((p) => p.id === petition.id ? { ...p, signatures: p.signatures + 1 } : p));
   };
 
   const handleSubmitPetition = async () => {
@@ -95,6 +100,7 @@ export default function PetitionsPage() {
 
     const localPetition: Petition = {
       id: `pet-${Date.now()}`,
+      userId: user.id,
       title: formTitle.trim(),
       description: formDescription.trim(),
       state: formState,
@@ -143,6 +149,23 @@ export default function PetitionsPage() {
     setFormTags("");
     setShowForm(false);
     setSaving(false);
+  };
+
+  const handleDeletePetition = async (petition: Petition) => {
+    if (!user || !isOwnPetition(petition, user)) return;
+    if (!window.confirm("Delete this petition? This removes it for everyone.")) return;
+
+    setDeletingId(petition.id);
+    try {
+      await deletePetition(petition.id, user.id);
+      setAllPetitions((prev) => prev.filter((item) => item.id !== petition.id));
+      setSelectedPetition((current) => current?.id === petition.id ? null : current);
+      toast.success("Petition deleted.");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not delete petition.");
+    } finally {
+      setDeletingId(null);
+    }
   };
 
   return (
@@ -247,6 +270,7 @@ export default function PetitionsPage() {
           const statusConf = STATUS_CONFIG[petition.status];
           const pct = Math.round((petition.signatures / petition.target) * 100);
           const isSigned = signed.has(petition.id);
+          const canDelete = Boolean(user && isOwnPetition(petition, user));
 
           return (
             <motion.div
@@ -264,16 +288,33 @@ export default function PetitionsPage() {
               {/* Header */}
               <div className="flex items-start justify-between gap-3 mb-3">
                 <h3 className="text-sm font-bold text-white leading-snug flex-1">{petition.title}</h3>
-                <span
-                  className="text-xs px-2 py-0.5 rounded-full flex-shrink-0 font-semibold"
-                  style={{
-                    background: `${statusConf.color}18`,
-                    color: statusConf.color,
-                    border: `1px solid ${statusConf.color}33`,
-                  }}
-                >
-                  {statusConf.label}
-                </span>
+                <div className="flex items-center gap-2">
+                  <span
+                    className="text-xs px-2 py-0.5 rounded-full flex-shrink-0 font-semibold"
+                    style={{
+                      background: `${statusConf.color}18`,
+                      color: statusConf.color,
+                      border: `1px solid ${statusConf.color}33`,
+                    }}
+                  >
+                    {statusConf.label}
+                  </span>
+                  {canDelete && (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeletePetition(petition);
+                      }}
+                      disabled={deletingId === petition.id}
+                      className="w-7 h-7 rounded-lg flex items-center justify-center transition-all duration-200"
+                      title="Delete your petition"
+                      style={{ background: "rgba(239,68,68,0.12)", color: "#EF4444", border: "1px solid rgba(239,68,68,0.25)" }}
+                    >
+                      <Trash2 size={13} />
+                    </button>
+                  )}
+                </div>
               </div>
 
               <p className="text-xs leading-relaxed mb-3" style={{ color: "rgba(255,255,255,0.55)" }}>
@@ -325,25 +366,44 @@ export default function PetitionsPage() {
                 ))}
               </div>
 
-              {/* Sign button */}
-              {petition.status === "active" && (
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.97 }}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleSign(petition.id);
-                  }}
-                  className="w-full py-2 rounded-xl text-sm font-semibold transition-all duration-200"
-                  style={{
-                    background: isSigned ? "rgba(34,197,94,0.15)" : "rgba(14,165,233,0.15)",
-                    border: `1px solid ${isSigned ? "rgba(34,197,94,0.3)" : "rgba(14,165,233,0.3)"}`,
-                    color: isSigned ? "#22C55E" : "#0EA5E9",
-                  }}
-                >
-                  {isSigned ? "✓ Signed" : "Sign Petition"}
-                </motion.button>
-              )}
+              <div className="flex gap-2">
+                {/* Sign button */}
+                {petition.status === "active" && (
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.97 }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleSign(petition);
+                    }}
+                    className="flex-1 py-2 rounded-xl text-sm font-semibold transition-all duration-200"
+                    style={{
+                      background: isSigned ? "rgba(34,197,94,0.15)" : "rgba(14,165,233,0.15)",
+                      border: `1px solid ${isSigned ? "rgba(34,197,94,0.3)" : "rgba(14,165,233,0.3)"}`,
+                      color: isSigned ? "#22C55E" : "#0EA5E9",
+                    }}
+                  >
+                    {isSigned ? "✓ Signed" : "Sign Petition"}
+                  </motion.button>
+                )}
+                {canDelete && (
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.97 }}
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDeletePetition(petition);
+                    }}
+                    disabled={deletingId === petition.id}
+                    className="px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200 flex items-center justify-center gap-2"
+                    style={{ background: "rgba(239,68,68,0.14)", border: "1px solid rgba(239,68,68,0.34)", color: "#EF4444" }}
+                  >
+                    <Trash2 size={14} />
+                    {deletingId === petition.id ? "Deleting..." : "Delete"}
+                  </motion.button>
+                )}
+              </div>
             </motion.div>
           );
         })}
@@ -591,10 +651,26 @@ export default function PetitionsPage() {
                   </span>
                 ))}
               </div>
+              {user && isOwnPetition(selectedPetition, user) && (
+                <button
+                  type="button"
+                  onClick={() => handleDeletePetition(selectedPetition)}
+                  disabled={deletingId === selectedPetition.id}
+                  className="mt-5 px-4 py-2 rounded-xl text-sm font-semibold flex items-center gap-2"
+                  style={{ background: "rgba(239,68,68,0.12)", color: "#EF4444", border: "1px solid rgba(239,68,68,0.25)" }}
+                >
+                  <Trash2 size={14} />
+                  {deletingId === selectedPetition.id ? "Deleting..." : "Delete Petition"}
+                </button>
+              )}
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
     </div>
   );
+}
+
+function isOwnPetition(petition: Petition, user: { id: string; name: string; email: string }) {
+  return petition.userId === user.id;
 }

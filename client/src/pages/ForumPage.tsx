@@ -5,13 +5,13 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLocation } from "wouter";
-import { MessageSquare, Search, TrendingUp, Heart, Eye, Reply, MapPin, Tag, Flame, Plus, X } from "lucide-react";
+import { MessageSquare, Search, TrendingUp, Heart, Eye, Reply, MapPin, Tag, Flame, Plus, X, Trash2 } from "lucide-react";
 import { forumPosts as initialPosts, type ForumPost } from "@/lib/mockData";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import SpeechInputButton from "@/components/SpeechInputButton";
 import { appendTranscript } from "@/lib/speechText";
-import { createForumPost, fetchForumPosts } from "@/lib/govlensData";
+import { createForumPost, deleteForumPost, fetchForumPosts } from "@/lib/govlensData";
 
 const CATEGORIES = ["All", "Transportation", "Infrastructure", "Healthcare", "Environment", "Agriculture", "Community", "Utilities"];
 
@@ -31,6 +31,7 @@ export default function ForumPage() {
   const [showForm, setShowForm] = useState(false);
   const [selectedPost, setSelectedPost] = useState<ForumPost | null>(null);
   const [saving, setSaving] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   // Form state
   const [formTitle, setFormTitle] = useState("");
@@ -79,6 +80,7 @@ export default function ForumPage() {
 
     const localPost: ForumPost = {
       id: `post-${Date.now()}`,
+      userId: user.id,
       title: formTitle.trim(),
       content: formContent.trim(),
       author: user.name,
@@ -124,6 +126,23 @@ export default function ForumPage() {
     setFormTags("");
     setShowForm(false);
     setSaving(false);
+  };
+
+  const handleDeletePost = async (post: ForumPost) => {
+    if (!user || !isOwnForumPost(post, user)) return;
+    if (!window.confirm("Delete this forum post? This removes it for everyone.")) return;
+
+    setDeletingId(post.id);
+    try {
+      await deleteForumPost(post.id, user.id);
+      setAllPosts((prev) => prev.filter((item) => item.id !== post.id));
+      setSelectedPost((current) => current?.id === post.id ? null : current);
+      toast.success("Forum post deleted.");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not delete forum post.");
+    } finally {
+      setDeletingId(null);
+    }
   };
 
   return (
@@ -253,6 +272,7 @@ export default function ForumPage() {
       <div className="space-y-4">
         {filtered.map((post, i) => {
           const isLiked = liked.has(post.id);
+          const canDelete = Boolean(user && isOwnForumPost(post, user));
           return (
             <motion.div
               key={post.id}
@@ -289,11 +309,28 @@ export default function ForumPage() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start justify-between gap-2 flex-wrap">
                     <h3 className="text-sm font-bold text-white leading-snug">{post.title}</h3>
-                    {post.trending && (
-                      <span className="text-xs px-2 py-0.5 rounded-full flex-shrink-0" style={{ background: "rgba(245,158,11,0.15)", color: "#F59E0B", border: "1px solid rgba(245,158,11,0.25)" }}>
-                        🔥 Trending
-                      </span>
-                    )}
+                    <div className="flex items-center gap-2">
+                      {post.trending && (
+                        <span className="text-xs px-2 py-0.5 rounded-full flex-shrink-0" style={{ background: "rgba(245,158,11,0.15)", color: "#F59E0B", border: "1px solid rgba(245,158,11,0.25)" }}>
+                          🔥 Trending
+                        </span>
+                      )}
+                      {canDelete && (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeletePost(post);
+                          }}
+                          disabled={deletingId === post.id}
+                          className="w-7 h-7 rounded-lg flex items-center justify-center transition-all duration-200"
+                          title="Delete your forum post"
+                          style={{ background: "rgba(239,68,68,0.12)", color: "#EF4444", border: "1px solid rgba(239,68,68,0.25)" }}
+                        >
+                          <Trash2 size={13} />
+                        </button>
+                      )}
+                    </div>
                   </div>
 
                   <p className="text-xs leading-relaxed mt-1 mb-3" style={{ color: "rgba(255,255,255,0.5)" }}>
@@ -329,6 +366,21 @@ export default function ForumPage() {
                       <Eye size={13} />
                       {post.views.toLocaleString()}
                     </div>
+                    {canDelete && (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeletePost(post);
+                        }}
+                        disabled={deletingId === post.id}
+                        className="flex items-center gap-1.5 text-xs font-semibold transition-all duration-200"
+                        style={{ color: "#EF4444" }}
+                      >
+                        <Trash2 size={13} />
+                        {deletingId === post.id ? "Deleting..." : "Delete"}
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>
@@ -394,6 +446,18 @@ export default function ForumPage() {
                   </span>
                 ))}
               </div>
+              {user && isOwnForumPost(selectedPost, user) && (
+                <button
+                  type="button"
+                  onClick={() => handleDeletePost(selectedPost)}
+                  disabled={deletingId === selectedPost.id}
+                  className="mt-5 px-4 py-2 rounded-xl text-sm font-semibold flex items-center gap-2"
+                  style={{ background: "rgba(239,68,68,0.12)", color: "#EF4444", border: "1px solid rgba(239,68,68,0.25)" }}
+                >
+                  <Trash2 size={14} />
+                  {deletingId === selectedPost.id ? "Deleting..." : "Delete Post"}
+                </button>
+              )}
             </motion.div>
           </motion.div>
         )}
@@ -564,4 +628,8 @@ export default function ForumPage() {
       </AnimatePresence>
     </div>
   );
+}
+
+function isOwnForumPost(post: ForumPost, user: { id: string; name: string; email: string }) {
+  return post.userId === user.id;
 }

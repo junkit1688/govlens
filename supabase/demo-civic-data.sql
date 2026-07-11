@@ -119,12 +119,21 @@ alter table public.demo_petition_signatures enable row level security;
 alter table public.demo_forum_posts enable row level security;
 alter table public.demo_votes enable row level security;
 
+grant usage on schema public to anon, authenticated;
+grant select, insert, update, delete on public.demo_reports to anon, authenticated;
+grant select, insert, update, delete on public.demo_petitions to anon, authenticated;
+grant select, insert on public.demo_petition_signatures to anon, authenticated;
+grant select, insert, update, delete on public.demo_forum_posts to anon, authenticated;
+grant select, insert on public.demo_votes to anon, authenticated;
+
 drop policy if exists "Demo reports are readable" on public.demo_reports;
 create policy "Demo reports are readable" on public.demo_reports for select using (true);
 drop policy if exists "Demo reports can be created" on public.demo_reports;
 create policy "Demo reports can be created" on public.demo_reports for insert with check (true);
 drop policy if exists "Demo reports can be updated" on public.demo_reports;
 create policy "Demo reports can be updated" on public.demo_reports for update using (true);
+drop policy if exists "Demo reports can be deleted" on public.demo_reports;
+create policy "Demo reports can be deleted" on public.demo_reports for delete using (true);
 
 drop policy if exists "Demo petitions are readable" on public.demo_petitions;
 create policy "Demo petitions are readable" on public.demo_petitions for select using (true);
@@ -132,6 +141,8 @@ drop policy if exists "Demo petitions can be created" on public.demo_petitions;
 create policy "Demo petitions can be created" on public.demo_petitions for insert with check (true);
 drop policy if exists "Demo petitions can be updated" on public.demo_petitions;
 create policy "Demo petitions can be updated" on public.demo_petitions for update using (true);
+drop policy if exists "Demo petitions can be deleted" on public.demo_petitions;
+create policy "Demo petitions can be deleted" on public.demo_petitions for delete using (true);
 
 drop policy if exists "Demo signatures are readable" on public.demo_petition_signatures;
 create policy "Demo signatures are readable" on public.demo_petition_signatures for select using (true);
@@ -144,6 +155,8 @@ drop policy if exists "Demo forum posts can be created" on public.demo_forum_pos
 create policy "Demo forum posts can be created" on public.demo_forum_posts for insert with check (true);
 drop policy if exists "Demo forum posts can be updated" on public.demo_forum_posts;
 create policy "Demo forum posts can be updated" on public.demo_forum_posts for update using (true);
+drop policy if exists "Demo forum posts can be deleted" on public.demo_forum_posts;
+create policy "Demo forum posts can be deleted" on public.demo_forum_posts for delete using (true);
 
 drop policy if exists "Demo votes are readable" on public.demo_votes;
 create policy "Demo votes are readable" on public.demo_votes for select using (true);

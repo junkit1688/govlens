@@ -43,6 +43,7 @@ export interface StateData {
 
 export interface Petition {
   id: string;
+  userId?: string;
   title: string;
   description: string;
   state: string;
@@ -69,6 +70,7 @@ export interface Vote {
 
 export interface ForumPost {
   id: string;
+  userId?: string;
   title: string;
   content: string;
   author: string;
@@ -84,6 +86,7 @@ export interface ForumPost {
 
 export interface CitizenReport {
   id: string;
+  userId?: string;
   title: string;
   description: string;
   category: "pothole" | "streetlight" | "road" | "sanitation" | "flooding" | "other";

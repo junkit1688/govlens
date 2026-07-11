@@ -54,13 +54,14 @@ export async function fetchReports(): Promise<CitizenReport[]> {
 
   const { data, error } = await supabase
     .from("demo_reports")
-    .select("id,title,description,category,state,location_text,status,image_url,author_name,created_at")
+    .select("id,user_id,title,description,category,state,location_text,status,image_url,author_name,created_at")
     .order("created_at", { ascending: false });
 
-  if (error) throw error;
+  throwIfSupabaseError(error, "load reports");
 
   return (data || []).map((row: any) => ({
     id: row.id,
+    userId: row.user_id,
     title: row.title,
     description: row.description,
     category: row.category,
@@ -90,13 +91,15 @@ export async function createReport(input: CreateReportInput): Promise<CitizenRep
       image_url: input.imageUrl || null,
       status: "submitted",
     })
-    .select("id,title,description,category,state,location_text,status,image_url,author_name,created_at")
+    .select("id,user_id,title,description,category,state,location_text,status,image_url,author_name,created_at")
     .single();
 
-  if (error) throw error;
+  throwIfSupabaseError(error, "save report");
+  throwIfMissingData(data, "save report");
 
   return {
     id: data.id,
+    userId: data.user_id,
     title: data.title,
     description: data.description,
     category: data.category,
@@ -111,18 +114,32 @@ export async function createReport(input: CreateReportInput): Promise<CitizenRep
   };
 }
 
+export async function deleteReport(reportId: string, userId: string) {
+  const client = requireSupabase();
+  const { data, error } = await client
+    .from("demo_reports")
+    .delete()
+    .eq("id", reportId)
+    .eq("user_id", userId)
+    .select("id");
+
+  throwIfSupabaseError(error, "delete report");
+  throwIfDeleteMissed(data, "delete report");
+}
+
 export async function fetchPetitions(): Promise<Petition[]> {
   if (!supabase) return [];
 
   const { data, error } = await supabase
     .from("demo_petitions")
-    .select("id,title,description,state,category,target,signature_count,status,tags,author_name,created_at")
+    .select("id,user_id,title,description,state,category,target,signature_count,status,tags,author_name,created_at")
     .order("created_at", { ascending: false });
 
-  if (error) throw error;
+  throwIfSupabaseError(error, "load petitions");
 
   return (data || []).map((row: any) => ({
     id: row.id,
+    userId: row.user_id,
     title: row.title,
     description: row.description,
     state: row.state,
@@ -152,15 +169,17 @@ export async function createPetition(input: CreatePetitionInput): Promise<Petiti
       status: "active",
       tags: input.tags,
     })
-    .select("id,title,description,state,category,target,signature_count,status,tags,author_name,created_at")
+    .select("id,user_id,title,description,state,category,target,signature_count,status,tags,author_name,created_at")
     .single();
 
-  if (error) throw error;
+  throwIfSupabaseError(error, "save petition");
+  throwIfMissingData(data, "save petition");
 
   await signPetition(data.id, input.userId);
 
   return {
     id: data.id,
+    userId: data.user_id,
     title: data.title,
     description: data.description,
     state: data.state,
@@ -174,6 +193,19 @@ export async function createPetition(input: CreatePetitionInput): Promise<Petiti
   };
 }
 
+export async function deletePetition(petitionId: string, userId: string) {
+  const client = requireSupabase();
+  const { data, error } = await client
+    .from("demo_petitions")
+    .delete()
+    .eq("id", petitionId)
+    .eq("user_id", userId)
+    .select("id");
+
+  throwIfSupabaseError(error, "delete petition");
+  throwIfDeleteMissed(data, "delete petition");
+}
+
 export async function signPetition(petitionId: string, userId: string) {
   const client = requireSupabase();
   const { error } = await client.from("demo_petition_signatures").insert({
@@ -181,7 +213,7 @@ export async function signPetition(petitionId: string, userId: string) {
     user_id: userId,
   });
 
-  if (error) throw error;
+  throwIfSupabaseError(error, "sign petition");
 }
 
 export async function fetchForumPosts(): Promise<ForumPost[]> {
@@ -189,13 +221,14 @@ export async function fetchForumPosts(): Promise<ForumPost[]> {
 
   const { data, error } = await supabase
     .from("demo_forum_posts")
-    .select("id,title,content,state,category,tags,likes,replies,views,trending,author_name,created_at")
+    .select("id,user_id,title,content,state,category,tags,likes,replies,views,trending,author_name,created_at")
     .order("created_at", { ascending: false });
 
-  if (error) throw error;
+  throwIfSupabaseError(error, "load forum posts");
 
   return (data || []).map((row: any) => ({
     id: row.id,
+    userId: row.user_id,
     title: row.title,
     content: row.content,
     author: row.author_name || "GovLens user",
@@ -223,13 +256,15 @@ export async function createForumPost(input: CreateForumPostInput): Promise<Foru
       category: input.category,
       tags: input.tags,
     })
-    .select("id,title,content,state,category,tags,likes,replies,views,trending,author_name,created_at")
+    .select("id,user_id,title,content,state,category,tags,likes,replies,views,trending,author_name,created_at")
     .single();
 
-  if (error) throw error;
+  throwIfSupabaseError(error, "save forum post");
+  throwIfMissingData(data, "save forum post");
 
   return {
     id: data.id,
+    userId: data.user_id,
     title: data.title,
     content: data.content,
     author: data.author_name || "GovLens user",
@@ -244,6 +279,19 @@ export async function createForumPost(input: CreateForumPostInput): Promise<Foru
   };
 }
 
+export async function deleteForumPost(postId: string, userId: string) {
+  const client = requireSupabase();
+  const { data, error } = await client
+    .from("demo_forum_posts")
+    .delete()
+    .eq("id", postId)
+    .eq("user_id", userId)
+    .select("id");
+
+  throwIfSupabaseError(error, "delete forum post");
+  throwIfDeleteMissed(data, "delete forum post");
+}
+
 export async function castVote(input: CastVoteInput) {
   const client = requireSupabase();
   const { error } = await client.from("demo_votes").insert({
@@ -254,7 +302,7 @@ export async function castVote(input: CastVoteInput) {
     option_label: input.optionLabel,
   });
 
-  if (error) throw error;
+  throwIfSupabaseError(error, "save vote");
 }
 
 export async function fetchNotifications(userId?: string): Promise<GovLensNotification[]> {
@@ -269,7 +317,7 @@ export async function fetchNotifications(userId?: string): Promise<GovLensNotifi
   if (userId) query = query.eq("user_id", userId);
 
   const { data, error } = await query;
-  if (error) throw error;
+  throwIfSupabaseError(error, "load notifications");
 
   return (data || []).map((row) => ({
     id: row.id,
@@ -292,6 +340,26 @@ function formatDate(value: string) {
     month: "short",
     day: "numeric",
   });
+}
+
+function throwIfSupabaseError(error: unknown, action: string) {
+  if (!error) return;
+
+  if (typeof error === "object" && error !== null && "message" in error) {
+    const details = "details" in error && typeof error.details === "string" ? ` ${error.details}` : "";
+    const hint = "hint" in error && typeof error.hint === "string" ? ` ${error.hint}` : "";
+    throw new Error(`Could not ${action}: ${String(error.message)}${details}${hint}`.trim());
+  }
+
+  throw new Error(`Could not ${action}.`);
+}
+
+function throwIfMissingData<T>(data: T | null, action: string): asserts data is T {
+  if (!data) throw new Error(`Could not ${action}: no data was returned from Supabase.`);
+}
+
+function throwIfDeleteMissed(data: { id: string }[] | null, action: string) {
+  if (!data?.length) throw new Error(`Could not ${action}: item was not found or is not yours.`);
 }
 
 function getProfileName(profile: { name?: string } | { name?: string }[] | null | undefined) {

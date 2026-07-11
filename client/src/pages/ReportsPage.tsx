@@ -6,13 +6,13 @@
 import { useEffect, useState, type ChangeEvent } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLocation } from "wouter";
-import { AlertTriangle, Search, Plus, MapPin, Clock, CheckCircle, Activity, ThumbsUp, Camera, X } from "lucide-react";
+import { AlertTriangle, Search, Plus, MapPin, Clock, CheckCircle, Activity, ThumbsUp, Camera, X, Trash2 } from "lucide-react";
 import { citizenReports as initialReports, type CitizenReport } from "@/lib/mockData";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import SpeechInputButton from "@/components/SpeechInputButton";
 import { appendTranscript } from "@/lib/speechText";
-import { createReport, fetchReports } from "@/lib/govlensData";
+import { createReport, deleteReport, fetchReports } from "@/lib/govlensData";
 
 const CATEGORY_CONFIG: Record<CitizenReport["category"], { label: string; color: string; emoji: string }> = {
   pothole: { label: "Pothole", color: "#EF4444", emoji: "🕳️" },
@@ -73,6 +73,7 @@ export default function ReportsPage() {
   const [showForm, setShowForm] = useState(false);
   const [selectedReport, setSelectedReport] = useState<CitizenReport | null>(null);
   const [saving, setSaving] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   // Form state
   const [formTitle, setFormTitle] = useState("");
@@ -136,6 +137,7 @@ export default function ReportsPage() {
     const fallbackImage = REPORT_IMAGE_FALLBACKS[formCategory as CitizenReport["category"]];
     const localReport: CitizenReport = {
       id: `rpt-${Date.now()}`,
+      userId: user.id,
       title: formTitle.trim(),
       description: formDescription.trim(),
       category: formCategory as CitizenReport["category"],
@@ -184,6 +186,23 @@ export default function ReportsPage() {
     setFormImageName("");
     setShowForm(false);
     setSaving(false);
+  };
+
+  const handleDeleteReport = async (report: CitizenReport) => {
+    if (!user || !isOwnReport(report, user)) return;
+    if (!window.confirm("Delete this report? This removes it for everyone.")) return;
+
+    setDeletingId(report.id);
+    try {
+      await deleteReport(report.id, user.id);
+      setReports((prev) => prev.filter((item) => item.id !== report.id));
+      setSelectedReport((current) => current?.id === report.id ? null : current);
+      toast.success("Report deleted.");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not delete report.");
+    } finally {
+      setDeletingId(null);
+    }
   };
 
   const pendingCount = reports.filter((r) => r.status === "pending").length;
@@ -324,6 +343,7 @@ export default function ReportsPage() {
           const catConf = CATEGORY_CONFIG[report.category];
           const statusConf = STATUS_CONFIG[report.status];
           const isUpvoted = upvoted.has(report.id);
+          const canDelete = Boolean(user && isOwnReport(report, user));
 
           return (
             <motion.div
@@ -339,7 +359,7 @@ export default function ReportsPage() {
               }}
             >
               {/* Category + status */}
-              <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center justify-between gap-2 mb-3">
                 <span
                   className="text-xs px-2 py-0.5 rounded-full font-semibold"
                   style={{
@@ -350,17 +370,34 @@ export default function ReportsPage() {
                 >
                   {catConf.emoji} {catConf.label}
                 </span>
-                <span
-                  className="text-xs px-2 py-0.5 rounded-full font-semibold flex items-center gap-1"
-                  style={{
-                    background: `${statusConf.color}18`,
-                    color: statusConf.color,
-                    border: `1px solid ${statusConf.color}33`,
-                  }}
-                >
-                  <statusConf.icon size={10} />
-                  {statusConf.label}
-                </span>
+                <div className="flex items-center gap-2">
+                  <span
+                    className="text-xs px-2 py-0.5 rounded-full font-semibold flex items-center gap-1"
+                    style={{
+                      background: `${statusConf.color}18`,
+                      color: statusConf.color,
+                      border: `1px solid ${statusConf.color}33`,
+                    }}
+                  >
+                    <statusConf.icon size={10} />
+                    {statusConf.label}
+                  </span>
+                  {canDelete && (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteReport(report);
+                      }}
+                      disabled={deletingId === report.id}
+                      className="w-7 h-7 rounded-lg flex items-center justify-center transition-all duration-200"
+                      title="Delete your report"
+                      style={{ background: "rgba(239,68,68,0.12)", color: "#EF4444", border: "1px solid rgba(239,68,68,0.25)" }}
+                    >
+                      <Trash2 size={13} />
+                    </button>
+                  )}
+                </div>
               </div>
 
               <img
@@ -389,23 +426,40 @@ export default function ReportsPage() {
               </div>
 
               <div className="flex items-center justify-between">
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleUpvote(report.id);
-                  }}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200"
-                  style={{
-                    background: isUpvoted ? "rgba(14,165,233,0.15)" : "rgba(255,255,255,0.06)",
-                    border: `1px solid ${isUpvoted ? "rgba(14,165,233,0.3)" : "rgba(255,255,255,0.1)"}`,
-                    color: isUpvoted ? "#0EA5E9" : "rgba(255,255,255,0.5)",
-                  }}
-                >
-                  <ThumbsUp size={12} />
-                  {report.upvotes} Upvotes
-                </motion.button>
+                <div className="flex items-center gap-2">
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleUpvote(report.id);
+                    }}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200"
+                    style={{
+                      background: isUpvoted ? "rgba(14,165,233,0.15)" : "rgba(255,255,255,0.06)",
+                      border: `1px solid ${isUpvoted ? "rgba(14,165,233,0.3)" : "rgba(255,255,255,0.1)"}`,
+                      color: isUpvoted ? "#0EA5E9" : "rgba(255,255,255,0.5)",
+                    }}
+                  >
+                    <ThumbsUp size={12} />
+                    {report.upvotes} Upvotes
+                  </motion.button>
+                  {canDelete && (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteReport(report);
+                      }}
+                      disabled={deletingId === report.id}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200"
+                      style={{ background: "rgba(239,68,68,0.12)", color: "#EF4444", border: "1px solid rgba(239,68,68,0.25)" }}
+                    >
+                      <Trash2 size={12} />
+                      {deletingId === report.id ? "Deleting..." : "Delete"}
+                    </button>
+                  )}
+                </div>
 
                 <span className="text-xs" style={{ color: "rgba(255,255,255,0.3)" }}>
                   #{report.id.toUpperCase()}
@@ -745,10 +799,26 @@ export default function ReportsPage() {
               <p className="text-sm leading-relaxed" style={{ color: "rgba(255,255,255,0.7)" }}>
                 {selectedReport.description}
               </p>
+              {user && isOwnReport(selectedReport, user) && (
+                <button
+                  type="button"
+                  onClick={() => handleDeleteReport(selectedReport)}
+                  disabled={deletingId === selectedReport.id}
+                  className="mt-5 px-4 py-2 rounded-xl text-sm font-semibold flex items-center gap-2"
+                  style={{ background: "rgba(239,68,68,0.12)", color: "#EF4444", border: "1px solid rgba(239,68,68,0.25)" }}
+                >
+                  <Trash2 size={14} />
+                  {deletingId === selectedReport.id ? "Deleting..." : "Delete Report"}
+                </button>
+              )}
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
     </div>
   );
+}
+
+function isOwnReport(report: CitizenReport, user: { id: string; name: string; email: string }) {
+  return report.userId === user.id;
 }
