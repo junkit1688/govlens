@@ -8,6 +8,7 @@ import { motion } from "framer-motion";
 import { useLocation } from "wouter";
 import { statesData } from "@/lib/mockData";
 import { MALAYSIA_STATES } from "@/lib/malaysiaPaths";
+import WebGLCivicLayer from "@/components/WebGLCivicLayer";
 
 const stateColors: Record<string, string> = {
   perlis: "#0EA5E9",
@@ -90,7 +91,7 @@ export default function MalaysiaMap() {
               Malaysia — Interactive Spending Map
             </h3>
             <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.4)" }}>
-              Hover to preview · Click to explore state dashboard
+              Hover to preview · Click to explore state dashboard · WebGL API layer active
             </p>
           </div>
           <div className="flex gap-4 text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>
@@ -102,121 +103,132 @@ export default function MalaysiaMap() {
               <div className="w-3 h-3 rounded-sm" style={{ background: "rgba(99,102,241,0.5)" }} />
               East Malaysia
             </div>
+            <div className="flex items-center gap-1.5">
+              <div className="w-3 h-3 rounded-full" style={{ background: "#FACC15", boxShadow: "0 0 12px rgba(250,204,21,0.75)" }} />
+              WebGL activity
+            </div>
           </div>
         </div>
 
-        {/* SVG Map */}
-        <svg
-          viewBox="0 0 900 500"
-          className="w-full"
-          style={{ maxHeight: 500 }}
-          onMouseMove={handleMouseMove}
-          onMouseLeave={() => setHoveredState(null)}
+        <div
+          className="relative w-full"
+          style={{ aspectRatio: "900 / 500" }}
         >
-          {/* Grid dots background */}
-          <defs>
-            <pattern id="grid" width="30" height="30" patternUnits="userSpaceOnUse">
-              <circle cx="15" cy="15" r="0.8" fill="rgba(255,255,255,0.06)" />
-            </pattern>
-            <filter id="glow">
-              <feGaussianBlur stdDeviation="3" result="coloredBlur" />
-              <feMerge>
-                <feMergeNode in="coloredBlur" />
-                <feMergeNode in="SourceGraphic" />
-              </feMerge>
-            </filter>
-            <filter id="glow-strong">
-              <feGaussianBlur stdDeviation="5" result="coloredBlur" />
-              <feMerge>
-                <feMergeNode in="coloredBlur" />
-                <feMergeNode in="SourceGraphic" />
-              </feMerge>
-            </filter>
-          </defs>
-          <rect width="900" height="500" fill="url(#grid)" />
+          <WebGLCivicLayer hoveredState={hoveredState} />
 
-          {/* Peninsular label */}
-          <text x="100" y="485" textAnchor="middle" fill="rgba(255,255,255,0.2)" fontSize="11" fontFamily="DM Sans, sans-serif">
-            PENINSULAR MALAYSIA
-          </text>
-          {/* East Malaysia label */}
-          <text x="700" y="485" textAnchor="middle" fill="rgba(255,255,255,0.2)" fontSize="11" fontFamily="DM Sans, sans-serif">
-            EAST MALAYSIA
-          </text>
+          {/* SVG Map */}
+          <svg
+            viewBox="0 0 900 500"
+            className="absolute inset-0 z-10 w-full h-full"
+            preserveAspectRatio="none"
+            onMouseMove={handleMouseMove}
+            onMouseLeave={() => setHoveredState(null)}
+          >
+            {/* Grid dots background */}
+            <defs>
+              <pattern id="grid" width="30" height="30" patternUnits="userSpaceOnUse">
+                <circle cx="15" cy="15" r="0.8" fill="rgba(255,255,255,0.06)" />
+              </pattern>
+              <filter id="glow">
+                <feGaussianBlur stdDeviation="3" result="coloredBlur" />
+                <feMerge>
+                  <feMergeNode in="coloredBlur" />
+                  <feMergeNode in="SourceGraphic" />
+                </feMerge>
+              </filter>
+              <filter id="glow-strong">
+                <feGaussianBlur stdDeviation="5" result="coloredBlur" />
+                <feMerge>
+                  <feMergeNode in="coloredBlur" />
+                  <feMergeNode in="SourceGraphic" />
+                </feMerge>
+              </filter>
+            </defs>
+            <rect width="900" height="500" fill="url(#grid)" />
 
-          {/* State shapes */}
-          {MALAYSIA_STATES.map((state) => {
-            const isHovered = hoveredState === state.id;
-            const color = stateColors[state.id] || "#0EA5E9";
-            const label = shortLabels[state.id] || state.name;
-            const isSmall = ["kuala-lumpur", "putrajaya", "labuan", "melaka"].includes(state.id);
+            {/* Peninsular label */}
+            <text x="100" y="485" textAnchor="middle" fill="rgba(255,255,255,0.2)" fontSize="11" fontFamily="DM Sans, sans-serif">
+              PENINSULAR MALAYSIA
+            </text>
+            {/* East Malaysia label */}
+            <text x="700" y="485" textAnchor="middle" fill="rgba(255,255,255,0.2)" fontSize="11" fontFamily="DM Sans, sans-serif">
+              EAST MALAYSIA
+            </text>
 
-            return (
-              <g
-                key={state.id}
-                onMouseEnter={() => setHoveredState(state.id)}
-                onMouseLeave={() => setHoveredState(null)}
-                onClick={() => handleStateClick(state.id)}
-                style={{ cursor: "pointer" }}
-              >
-                {/* Glow layer (shown on hover) */}
-                {isHovered && (
-                  <path
+            {/* State shapes */}
+            {MALAYSIA_STATES.map((state) => {
+              const isHovered = hoveredState === state.id;
+              const color = stateColors[state.id] || "#0EA5E9";
+              const label = shortLabels[state.id] || state.name;
+              const isSmall = ["kuala-lumpur", "putrajaya", "labuan", "melaka"].includes(state.id);
+
+              return (
+                <g
+                  key={state.id}
+                  onMouseEnter={() => setHoveredState(state.id)}
+                  onMouseLeave={() => setHoveredState(null)}
+                  onClick={() => handleStateClick(state.id)}
+                  style={{ cursor: "pointer" }}
+                >
+                  {/* Glow layer (shown on hover) */}
+                  {isHovered && (
+                    <path
+                      d={state.path}
+                      fill={color}
+                      opacity={0.25}
+                      filter="url(#glow-strong)"
+                    />
+                  )}
+
+                  {/* Main shape */}
+                  <motion.path
                     d={state.path}
-                    fill={color}
-                    opacity={0.25}
-                    filter="url(#glow-strong)"
+                    fill={isHovered ? color : `${color}55`}
+                    stroke={isHovered ? color : `${color}88`}
+                    strokeWidth={isHovered ? 1.5 : 0.8}
+                    filter={isHovered ? "url(#glow)" : undefined}
+                    animate={{
+                      opacity: isHovered ? 1 : 0.75,
+                    }}
+                    transition={{ duration: 0.2, ease: "easeOut" as const }}
                   />
-                )}
 
-                {/* Main shape */}
-                <motion.path
-                  d={state.path}
-                  fill={isHovered ? color : `${color}55`}
-                  stroke={isHovered ? color : `${color}88`}
-                  strokeWidth={isHovered ? 1.5 : 0.8}
-                  filter={isHovered ? "url(#glow)" : undefined}
-                  animate={{
-                    opacity: isHovered ? 1 : 0.75,
-                  }}
-                  transition={{ duration: 0.2, ease: "easeOut" as const }}
-                />
-
-                {/* State label */}
-                {!isSmall && (
-                  <text
-                    x={state.cx}
-                    y={state.cy}
-                    textAnchor="middle"
-                    dominantBaseline="middle"
-                    fill={isHovered ? "#ffffff" : "rgba(255,255,255,0.65)"}
-                    fontSize={9}
-                    fontFamily="DM Sans, sans-serif"
-                    fontWeight={isHovered ? "700" : "500"}
-                    style={{ pointerEvents: "none", transition: "all 0.2s" }}
-                  >
-                    {label}
-                  </text>
-                )}
-                {isSmall && (
-                  <text
-                    x={state.cx}
-                    y={state.cy}
-                    textAnchor="middle"
-                    dominantBaseline="middle"
-                    fill={isHovered ? "#ffffff" : "rgba(255,255,255,0.55)"}
-                    fontSize={6}
-                    fontFamily="DM Sans, sans-serif"
-                    fontWeight={isHovered ? "700" : "500"}
-                    style={{ pointerEvents: "none", transition: "all 0.2s" }}
-                  >
-                    {label}
-                  </text>
-                )}
-              </g>
-            );
-          })}
-        </svg>
+                  {/* State label */}
+                  {!isSmall && (
+                    <text
+                      x={state.cx}
+                      y={state.cy}
+                      textAnchor="middle"
+                      dominantBaseline="middle"
+                      fill={isHovered ? "#ffffff" : "rgba(255,255,255,0.65)"}
+                      fontSize={9}
+                      fontFamily="DM Sans, sans-serif"
+                      fontWeight={isHovered ? "700" : "500"}
+                      style={{ pointerEvents: "none", transition: "all 0.2s" }}
+                    >
+                      {label}
+                    </text>
+                  )}
+                  {isSmall && (
+                    <text
+                      x={state.cx}
+                      y={state.cy}
+                      textAnchor="middle"
+                      dominantBaseline="middle"
+                      fill={isHovered ? "#ffffff" : "rgba(255,255,255,0.55)"}
+                      fontSize={6}
+                      fontFamily="DM Sans, sans-serif"
+                      fontWeight={isHovered ? "700" : "500"}
+                      style={{ pointerEvents: "none", transition: "all 0.2s" }}
+                    >
+                      {label}
+                    </text>
+                  )}
+                </g>
+              );
+            })}
+          </svg>
+        </div>
 
         {/* Tooltip */}
         {hoveredState && (

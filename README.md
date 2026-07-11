@@ -16,6 +16,7 @@ Live site: https://junkit1688.github.io/govlens/
 - Supabase Auth for login and account creation
 - Supabase database storage for reports, petitions, signatures, forum posts, votes, and notifications
 - Browser speech-to-text input for long form fields using the Web Speech API
+- WebGL visual API layer on the Malaysia civic spending map
 - Animated dashboard UI with collapsible navigation
 
 ## Tech Stack
@@ -30,6 +31,7 @@ Live site: https://junkit1688.github.io/govlens/
 - Lucide React
 - Supabase
 - Browser Web Speech API
+- Browser WebGL API
 
 ## Supabase Setup
 
@@ -123,6 +125,6 @@ When building for GitHub Pages, the app uses `/govlens/` as the base path.
 - Real backend features: Supabase email/demo account login, reports insert/delete, petitions insert/delete, petition signatures insert, forum posts insert/delete, votes insert, and notification fetch.
 - Prototype/fallback features: mock state spending data, seeded petitions/forum/reports/voting data, and local fallback auth when Supabase env vars are absent.
 - Audio technique: Web Speech API microphone buttons are available on petition descriptions, forum post content, and citizen report descriptions. Unsupported browsers show an error message instead of breaking the form.
-- Visual technique: the existing Malaysia spending map remains the interactive visual data map. A future Mapbox GL JS/WebGL integration can be added if a Mapbox token and scope are available, but it is intentionally not required for the current stable assignment build.
+- Visual technique: the Malaysia spending map includes a browser WebGL API layer that compiles shaders, uploads civic activity points into a GPU buffer, and renders animated visual markers over the interactive state map. Hovering states updates the WebGL layer and the SVG tooltip together.
 
 Submitted Supabase data is stored in PostgreSQL. Mock data remains visible to make the classroom prototype useful before the database has records.

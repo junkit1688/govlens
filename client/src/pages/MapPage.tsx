@@ -3,6 +3,7 @@
  */
 import { motion } from "framer-motion";
 import MalaysiaMap from "@/components/MalaysiaMap";
+import WebGLIssueMap from "@/components/WebGLIssueMap";
 import { nationalStats, statesData } from "@/lib/mockData";
 import { TrendingUp, CheckCircle, Users, FileText, BarChart3, Globe } from "lucide-react";
 import { Link } from "wouter";
@@ -47,45 +48,16 @@ export default function MapPage() {
           }}
         >
           <Globe size={13} />
-          Interactive visual data map for HCI visual-tech requirement
+          WebGL visual API layer for HCI visual-tech requirement
         </div>
       </motion.div>
 
-      {/* National stats */}
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, delay: 0.1 }}
-        className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3"
-      >
-        {statsItems.map((stat, i) => (
-          <motion.div
-            key={stat.label}
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 + i * 0.05 }}
-            className="stat-card"
-          >
-            <div
-              className="w-8 h-8 rounded-lg flex items-center justify-center mb-2"
-              style={{ background: `${stat.color}18` }}
-            >
-              <stat.icon size={16} style={{ color: stat.color }} />
-            </div>
-            <div
-              className="text-xl font-bold text-white"
-              style={{ fontFamily: "Syne, sans-serif" }}
-            >
-              {stat.value}
-            </div>
-            <div className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.4)" }}>
-              {stat.label}
-            </div>
-          </motion.div>
-        ))}
-      </motion.div>
-
       {/* Map + sidebar */}
+      <div>
+        <h2 className="text-xl font-bold text-white mb-3" style={{ fontFamily: "Syne, sans-serif" }}>
+          Malaysia Spending Map
+        </h2>
+      </div>
       <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
         {/* Map */}
         <motion.div
@@ -176,6 +148,58 @@ export default function MapPage() {
           </div>
         </motion.div>
       </div>
+
+      {/* National stats */}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: 0.1 }}
+        className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3"
+      >
+        {statsItems.map((stat, i) => (
+          <motion.div
+            key={stat.label}
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 + i * 0.05 }}
+            className="stat-card"
+          >
+            <div
+              className="w-8 h-8 rounded-lg flex items-center justify-center mb-2"
+              style={{ background: `${stat.color}18` }}
+            >
+              <stat.icon size={16} style={{ color: stat.color }} />
+            </div>
+            <div
+              className="text-xl font-bold text-white"
+              style={{ fontFamily: "Syne, sans-serif" }}
+            >
+              {stat.value}
+            </div>
+            <div className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.4)" }}>
+              {stat.label}
+            </div>
+          </motion.div>
+        ))}
+      </motion.div>
+
+      {/* WebGL visual API report map */}
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.45, delay: 0.12 }}
+        className="space-y-3"
+      >
+        <div>
+          <h2 className="text-xl font-bold text-white" style={{ fontFamily: "Syne, sans-serif" }}>
+            Citizen Report Street Map
+          </h2>
+          <p className="text-sm mt-1" style={{ color: "rgba(255,255,255,0.45)" }}>
+            A real zoomable map using OpenStreetMap tiles with a WebGL API layer for report markers from the Citizen Reporting page.
+          </p>
+        </div>
+        <WebGLIssueMap />
+      </motion.div>
 
       {/* Budget overview note */}
       <motion.div
